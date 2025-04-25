@@ -4,6 +4,7 @@
   "description": "Jot's Backend.",
   "main": "index.js",
   "scripts": {
+    "dev": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,7 +19,7 @@
     "eslint": "^9.24.0",
     "prettier": "^3.5.3",
     "prisma": "^6.6.0",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }
 }
