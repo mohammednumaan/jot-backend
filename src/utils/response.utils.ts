@@ -51,7 +51,6 @@ function sendApiResponse(
   res: Response,
   response: ApiSucessResponse<any> | ApiErrorResponse,
 ) {
-  console.log("hi");
   return res.status(response.statusCode).json(response);
 }
 

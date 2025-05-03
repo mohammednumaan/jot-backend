@@ -19,6 +19,7 @@ import {
   AuthLoginRequestSchema,
   AuthLoginResponse,
 } from "../../zod/auth/login.z";
+import { envData } from "../../env";
 
 export default class AuthController implements IAuthController {
   private readonly authService: AuthService;
@@ -30,18 +31,18 @@ export default class AuthController implements IAuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthSignupRequest>(
       AuthSignupRequestSchema,
-      req.body,
+      req.body
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten(),
+        validationResult.error.flatten()
       );
     }
     const registeredUser: IAuthUserDTO = await this.authService.signup(
-      validationResult.data,
+      validationResult.data
     );
     const responseData: AuthSignupResponse = {
       user: registeredUser,
@@ -50,7 +51,7 @@ export default class AuthController implements IAuthController {
     const successResponse = createApiSuccessResponse<AuthSignupResponse>(
       "User registered successfully",
       201,
-      responseData,
+      responseData
     );
     return sendApiResponse(res, successResponse);
   }
@@ -58,14 +59,14 @@ export default class AuthController implements IAuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthLoginRequest>(
       AuthLoginRequestSchema,
-      req.body,
+      req.body
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error,
+        validationResult.error
       );
     }
 
@@ -79,9 +80,14 @@ export default class AuthController implements IAuthController {
       success: true,
       message: "User logged-in successfully",
       statusCode: 200,
-      data: responseData,
+      data: { user: responseData.user },
     };
 
+    res.cookie("jot_access_token", responseData.accessToken, {
+      httpOnly: true,
+      maxAge: 1 * 24 * 60 * 60,
+      secure: envData.NODE_ENV === "production" ? true : false,
+    });
     return res.status(successResponse.statusCode).json(successResponse);
   }
 }

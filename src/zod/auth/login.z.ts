@@ -13,7 +13,6 @@ const AuthLoginRequestSchema = z.object({
 // AUTH LOGIN RESPONSE SCHEMA
 const AuthLoginResponseSchema = z.object({
   user: zUserSchema,
-  accessToken: z.string(),
 });
 
 type AuthLoginRequest = z.infer<typeof AuthLoginRequestSchema>;

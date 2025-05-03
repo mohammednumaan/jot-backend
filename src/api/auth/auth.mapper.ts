@@ -5,7 +5,7 @@ export class AuthMapper {
   mapToSignupUser(user: IUser): IAuthUserDTO {
     return {
       email: user.email,
-      username: user.email,
+      username: user.username,
       avatar: user.avatar,
       joinedAt: user.joinedAt,
     };
@@ -15,7 +15,7 @@ export class AuthMapper {
     return {
       user: {
         email: user.email,
-        username: user.email,
+        username: user.username,
         avatar: user.avatar,
         joinedAt: user.joinedAt,
       },

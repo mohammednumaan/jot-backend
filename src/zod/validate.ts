@@ -15,7 +15,6 @@ export default function validate<T>(
   inputs: T,
 ): ISuccessValidation<T> | IErrorValidation {
   const result = schema.safeParse(inputs);
-  console.log(result.error);
   if (result.success) {
     return {
       success: true,

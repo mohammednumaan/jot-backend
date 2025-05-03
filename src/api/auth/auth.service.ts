@@ -12,10 +12,14 @@ import { AuthLoginRequest } from "../../zod/auth/login.z";
 import { BadRequestError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import { envData } from "../../env";
+import { IUser } from "../user/user.types";
+import { AuthMapper } from "./auth.mapper";
 
 export class AuthService implements IAuthService {
   private readonly userDB: UserDB;
+  private readonly mapper: AuthMapper;
   constructor() {
+    this.mapper = new AuthMapper();
     this.userDB = new UserDB();
   }
   async signup(signupData: AuthSignupRequest): Promise<IAuthUserDTO> {
@@ -28,8 +32,7 @@ export class AuthService implements IAuthService {
       signupData.password,
       envData.SALT_ROUNDS,
     );
-    console.log(hashedPassword);
-    const user: IAuthUserDTO = await prismaErrorHandler<IAuthUserDTO>(() =>
+    const user: IUser = await prismaErrorHandler<IUser>(() =>
       this.userDB.createUser(
         signupData.email,
         hashedPassword,
@@ -38,11 +41,12 @@ export class AuthService implements IAuthService {
       ),
     );
 
-    return user;
+    const mapperUser: IAuthUserDTO = this.mapper.mapToSignupUser(user);
+    return mapperUser;
   }
 
   async login(loginData: AuthLoginRequest): Promise<IAuthLoginDTO> {
-    const user = await prismaErrorHandler(() =>
+    const user = await prismaErrorHandler<IUser | null>(() =>
       this.userDB.findOneUser(loginData.email),
     );
 
@@ -63,22 +67,13 @@ export class AuthService implements IAuthService {
       email: user.email,
     };
     const accessToken = this.generateAccessToken(accessTokenPayload);
-    const userWithoutPassword: IAuthUserDTO = {
-      email: user.email,
-      username: user.username,
-      avatar: user.avatar,
-      joinedAt: user.joinedAt,
-    };
-
-    return {
-      user: userWithoutPassword,
-      accessToken,
-    };
+    const mappedUser = this.mapper.mapToLoginUser(user, accessToken);
+    return mappedUser;
   }
 
   private generateAccessToken(payload: AccessTokenPayloadType) {
     const accessToken = jwt.sign(payload, envData.ACCESS_TOKEN_SECRET, {
-      expiresIn: "10h",
+      expiresIn: "1d",
     });
     return accessToken;
   }
