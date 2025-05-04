@@ -19,12 +19,6 @@ const AuthSignupRequestSchema = z
       .min(3, "Username must be at least 1 characters long")
       .max(20, "Usernames must be at most 20 characters long"),
 
-    avatar: z
-      .string({ required_error: "Avatar is required" })
-      .trim()
-      .min(3, "Avatar must be at least 1 characters long")
-      .max(20, "Avatar's must be at most 20 characters long"),
-
     confirm_password: z
       .string({ required_error: "Conform Password is required" })
       .trim()
@@ -37,7 +31,7 @@ const AuthSignupRequestSchema = z
     {
       message: "Passwords do not match",
       path: ["confirm_password"],
-    },
+    }
   );
 
 // AUTH SIGNUP RESPONSE SCHEMA

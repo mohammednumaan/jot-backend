@@ -62,7 +62,7 @@ export class ValidationError extends ApiError {
     apiErrorCode = "VALIDATION_ERROR",
     description?: unknown,
   ) {
-    super(message, 403, apiErrorCode, description);
+    super(message, 422, apiErrorCode, description);
     this.name = "ValidationError";
   }
 }

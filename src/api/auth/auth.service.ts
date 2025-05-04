@@ -30,15 +30,14 @@ export class AuthService implements IAuthService {
 
     const hashedPassword = await bcrypt.hash(
       signupData.password,
-      envData.SALT_ROUNDS,
+      envData.SALT_ROUNDS
     );
     const user: IUser = await prismaErrorHandler<IUser>(() =>
       this.userDB.createUser(
         signupData.email,
         hashedPassword,
-        signupData.username,
-        signupData.avatar,
-      ),
+        signupData.username
+      )
     );
 
     const mapperUser: IAuthUserDTO = this.mapper.mapToSignupUser(user);
@@ -47,7 +46,7 @@ export class AuthService implements IAuthService {
 
   async login(loginData: AuthLoginRequest): Promise<IAuthLoginDTO> {
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.userDB.findOneUser(loginData.email),
+      this.userDB.findOneUser(loginData.email)
     );
 
     if (!user) {
@@ -56,7 +55,7 @@ export class AuthService implements IAuthService {
 
     const isPasswordValid = await bcrypt.compare(
       loginData.password,
-      user.password,
+      user.password
     );
     if (!isPasswordValid) {
       throw new BadRequestError("Invalid username or password");

@@ -16,14 +16,13 @@ export class UserDB {
     email: string,
     password: string,
     username: string,
-    avatar: string,
   ): Promise<IUser> {
     const newUser = await prisma.user.create({
       data: {
         email,
         password,
         username: username || "new_user",
-        avatar: avatar || "",
+        avatar: "",
         joinedAt: new Date(),
       },
     });
