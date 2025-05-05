@@ -31,7 +31,7 @@ const AuthSignupRequestSchema = z
     {
       message: "Passwords do not match",
       path: ["confirm_password"],
-    }
+    },
   );
 
 // AUTH SIGNUP RESPONSE SCHEMA

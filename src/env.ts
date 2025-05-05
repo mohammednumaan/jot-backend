@@ -4,6 +4,7 @@ configDotenv();
 
 const EnvironmentSchema = z.object({
   NODE_ENV: z.enum(["development", "production"]).default("development"),
+  FRONTEND_URL: z.string().min(1, { message: "Frontend URL is required" }),
   DATABASE_URL: z.string().min(1, { message: "Database URL is required" }),
   PORT: z.coerce.number().int().positive().default(3000),
   ACCESS_TOKEN_SECRET: z

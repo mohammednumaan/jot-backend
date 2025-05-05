@@ -14,6 +14,10 @@ interface IAuthService {
   login: (loginData: AuthLoginRequest) => Promise<IAuthLoginDTO>;
 }
 
+interface IAuthStatus {
+  status: boolean;
+}
+
 type IAuthUserDTO = Omit<IUser, "id" | "password">;
 interface IAuthLoginDTO {
   user: IAuthUserDTO;
@@ -29,6 +33,7 @@ type AccessTokenPayloadType = z.infer<typeof AcessTokenPayloadSchema>;
 export {
   IAuthController,
   IAuthService,
+  IAuthStatus,
   IAuthUserDTO,
   IAuthLoginDTO,
   AccessTokenPayloadType,

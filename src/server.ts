@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import HTTPRouter from "./router";
 import { envData } from "./env";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 export default class HTTPServer {
   private readonly app: Express;
@@ -20,9 +21,10 @@ export default class HTTPServer {
   }
 
   private async initMiddleware() {
-    this.app.use(cors());
+    this.app.use(cors({ origin: envData.FRONTEND_URL, credentials: true }));
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cookieParser());
     this.app.use("/static", express.static("public"));
     this.httpRouter.init("/api/v1", this.app);
   }

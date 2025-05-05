@@ -1,8 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { IAuthController, IAuthLoginDTO, IAuthUserDTO } from "./auth.types";
+import {
+  IAuthController,
+  IAuthLoginDTO,
+  IAuthStatus,
+  IAuthUserDTO,
+} from "./auth.types";
 import validate from "../../zod/validate";
 
-import { ValidationError } from "../../errors/api/error";
+import { BadRequestError, ValidationError } from "../../errors/api/error";
 import { AuthService } from "./auth.service";
 import {
   ApiSucessResponse,
@@ -20,6 +25,7 @@ import {
   AuthLoginResponse,
 } from "../../zod/auth/login.z";
 import { envData } from "../../env";
+import verifyToken from "../../utils/verify_token.utils";
 
 export default class AuthController implements IAuthController {
   private readonly authService: AuthService;
@@ -31,18 +37,18 @@ export default class AuthController implements IAuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthSignupRequest>(
       AuthSignupRequestSchema,
-      req.body
+      req.body,
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten()
+        validationResult.error.flatten(),
       );
     }
     const registeredUser: IAuthUserDTO = await this.authService.signup(
-      validationResult.data
+      validationResult.data,
     );
     const responseData: AuthSignupResponse = {
       user: registeredUser,
@@ -51,7 +57,7 @@ export default class AuthController implements IAuthController {
     const successResponse = createApiSuccessResponse<AuthSignupResponse>(
       "User registered successfully",
       201,
-      responseData
+      responseData,
     );
     return sendApiResponse(res, successResponse);
   }
@@ -59,14 +65,14 @@ export default class AuthController implements IAuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthLoginRequest>(
       AuthLoginRequestSchema,
-      req.body
+      req.body,
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error
+        validationResult.error,
       );
     }
 
@@ -88,6 +94,22 @@ export default class AuthController implements IAuthController {
       maxAge: 1 * 24 * 60 * 60,
       secure: envData.NODE_ENV === "production" ? true : false,
     });
+    return res.status(successResponse.statusCode).json(successResponse);
+  }
+
+  async authenticationStatus(req: Request, res: Response, next: NextFunction) {
+    const jwtCookie = req.cookies["jot_access_token"];
+    if (!jwtCookie) {
+      throw new BadRequestError("Access token is not provided");
+    }
+    verifyToken(req, jwtCookie);
+    const successResponse: ApiSucessResponse<IAuthStatus> = {
+      success: true,
+      message: "Authentication status retrived successfully",
+      statusCode: 200,
+      data: { status: true },
+    };
+
     return res.status(successResponse.statusCode).json(successResponse);
   }
 }

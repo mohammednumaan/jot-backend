@@ -22,6 +22,13 @@ export default class AuthRouter {
       "/login",
       asyncErrorHandler(this.controller.login.bind(this.controller)),
     );
+
+    this.router.get(
+      "/status",
+      asyncErrorHandler(
+        this.controller.authenticationStatus.bind(this.controller),
+      ),
+    );
   }
 
   private async attachRouter(path: string, app: Router) {
