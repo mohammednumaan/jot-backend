@@ -91,9 +91,10 @@ export default class AuthController implements IAuthController {
 
     res.cookie("jot_access_token", responseData.accessToken, {
       httpOnly: true,
-      maxAge: 1 * 24 * 60 * 60,
+      maxAge: 1 * 24 * 60 * 60 * 1000,
       secure: envData.NODE_ENV === "production" ? true : false,
     });
+    
     return res.status(successResponse.statusCode).json(successResponse);
   }
 
