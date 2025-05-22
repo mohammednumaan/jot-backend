@@ -23,4 +23,19 @@ export class JotDB {
 
     return newJot;
   }
+
+  async getAllJots(): Promise<IJot[]>{
+    const jots = await prisma.jot.findMany();
+    return jots;
+  }
+
+  async getJotById(jotId: string): Promise<IJot | null>{
+    const jot = await prisma.jot.findFirst({
+      where: {
+        id: jotId,
+      },
+    });
+
+    return jot;
+  }
 }

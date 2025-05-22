@@ -20,6 +20,15 @@ export default class JotRouter {
       next();
     }));
 
+    this.router.get(
+      "/",
+      asyncErrorHandler(this.controller.getAll.bind(this.controller))
+    )
+    this.router.get(
+      "/:jotId",
+      asyncErrorHandler(this.controller.getById.bind(this.controller))
+    )
+
     this.router.post(
       "/create",
       asyncErrorHandler(this.controller.create.bind(this.controller))

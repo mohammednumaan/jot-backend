@@ -14,6 +14,6 @@ export default class HTTPRouter {
 
   async init(path: string, app: Application) {
     this.authRouter.init(`${path}/auth`, app);
-    this.jotRouter.init(`${path}/jot`, app);
+    this.jotRouter.init(`${path}/jots`, app);
   }
 }

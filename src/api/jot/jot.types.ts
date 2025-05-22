@@ -3,10 +3,14 @@ import { JotRequestType } from "../../zod/jot/jot.z";
 
 interface IJotController {
   create: (req: Request, res: Response, next: NextFunction) => void;
+  getById: (req: Request, res: Response, next: NextFunction) => void;
+  getAll: (req: Request, res: Response, next: NextFunction) => void;
 }
 
 interface IJotService {
   create: (jotData: JotRequestType, userId: string) => Promise<IJotDTO>;
+  getById: (jotId: string, userId: string) => Promise<IJot>;
+  getAll: () => Promise<IJot[]>;
 }
 
 interface IJot {
