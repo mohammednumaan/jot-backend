@@ -29,7 +29,7 @@ model Jot {
   name String
 
   extension String @default("txt")
-  description String
+  description String?
   content String
 
   createdAt DateTime @default(now())

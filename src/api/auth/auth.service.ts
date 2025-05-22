@@ -63,7 +63,6 @@ export class AuthService implements IAuthService {
 
     const accessTokenPayload: AccessTokenPayloadType = {
       id: user.id,
-      email: user.email,
     };
     const accessToken = this.generateAccessToken(accessTokenPayload);
     const mappedUser = this.mapper.mapToLoginUser(user, accessToken);

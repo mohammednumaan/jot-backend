@@ -26,7 +26,6 @@ interface IAuthLoginDTO {
 
 const AcessTokenPayloadSchema = z.object({
   id: z.string(),
-  email: z.string().email("Invalid email format"),
 });
 type AccessTokenPayloadType = z.infer<typeof AcessTokenPayloadSchema>;
 

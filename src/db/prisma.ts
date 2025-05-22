@@ -1,3 +1,3 @@
 import { PrismaClient } from "../../generated/prisma";
-const prisma = new PrismaClient({ errorFormat: "minimal" });
+const prisma = new PrismaClient({ errorFormat: "minimal", log: ['query'] });
 export default prisma;

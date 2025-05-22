@@ -103,6 +103,8 @@ export default class AuthController implements IAuthController {
     if (!jwtCookie) {
       throw new BadRequestError("Access token is not provided");
     }
+
+    // TODO: Send appropriate message if the token failed the verification
     verifyToken(req, jwtCookie);
     const successResponse: ApiSucessResponse<IAuthStatus> = {
       success: true,
