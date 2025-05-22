@@ -12,12 +12,18 @@ const AuthLoginResponseSchema = z.object({
   user: zUserSchema,
 });
 
+const AcessTokenPayloadSchema = z.object({
+  id: z.string(),
+});
+
 type AuthLoginRequest = z.infer<typeof AuthLoginRequestSchema>;
 type AuthLoginResponse = z.infer<typeof AuthLoginResponseSchema>;
+type AccessTokenPayloadType = z.infer<typeof AcessTokenPayloadSchema>;
 
 export {
   AuthLoginRequestSchema,
   AuthLoginResponseSchema,
   AuthLoginRequest,
   AuthLoginResponse,
+  AccessTokenPayloadType
 };

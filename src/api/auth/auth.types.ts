@@ -24,16 +24,10 @@ interface IAuthLoginDTO {
   accessToken: string;
 }
 
-const AcessTokenPayloadSchema = z.object({
-  id: z.string(),
-});
-type AccessTokenPayloadType = z.infer<typeof AcessTokenPayloadSchema>;
-
 export {
   IAuthController,
   IAuthService,
   IAuthStatus,
   IAuthUserDTO,
   IAuthLoginDTO,
-  AccessTokenPayloadType,
 };

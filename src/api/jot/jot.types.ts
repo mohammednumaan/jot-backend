@@ -27,9 +27,5 @@ interface IJotGroup {
   updatedAt: Date;
 }
 
-interface JotCreateResponse {
-  jot: IJotDTO
-}
-
 type IJotDTO = Omit<IJot, "id" | "updatedAt" | "jotGroupId">;
-export { IJotController, IJotService, IJot, IJotGroup, IJotDTO, JotCreateResponse };
+export { IJotController, IJotService, IJot, IJotGroup, IJotDTO };

@@ -1,14 +1,13 @@
 import { UserDB } from "../../db/user.db";
 import bcrypt from "bcrypt";
 import {
-  AccessTokenPayloadType,
   IAuthLoginDTO,
   IAuthService,
   IAuthUserDTO,
 } from "./auth.types";
 import jwt from "jsonwebtoken";
 import { AuthSignupRequest } from "../../zod/auth/signup.z";
-import { AuthLoginRequest } from "../../zod/auth/login.z";
+import { AccessTokenPayloadType, AuthLoginRequest } from "../../zod/auth/login.z";
 import { BadRequestError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import { envData } from "../../env";

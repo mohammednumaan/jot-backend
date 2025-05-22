@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { JotService } from "./jot.service";
-import { IJotController, IJotDTO, JotCreateResponse } from "./jot.types";
+import { IJotController, IJotDTO } from "./jot.types";
 import validate from "../../zod/validate";
-import { JotRequestSchema, JotRequestType } from "../../zod/jot/jot.z";
+import { JotRequestSchema, JotRequestType, JotResponseSchema, JotResponseType } from "../../zod/jot/jot.z";
 import { ValidationError } from "../../errors/api/error";
 import { createApiSuccessResponse, sendApiResponse } from "../../utils/response.utils";
 
@@ -27,11 +27,24 @@ export default class JotController implements IJotController {
     }
 
     const createdJot: IJotDTO = await this.jotService.create(validationResult.data, req.user.id);
-    const responseData: JotCreateResponse = {
+    const responseData: JotResponseType = {
         jot: createdJot
     }
 
-    const successResponse = createApiSuccessResponse<JotCreateResponse>(
+    const responseValidation = validate<JotResponseType>(
+      JotResponseSchema,
+      responseData
+    )
+
+    if (!responseValidation.success){
+      throw new ValidationError(
+        "Invalid response format",
+        "VALIDATION_ERROR",
+        responseValidation.error.flatten()
+      );
+    };
+
+    const successResponse = createApiSuccessResponse<JotResponseType>(
         "Jot created successfully",
         201,
         responseData

@@ -13,8 +13,21 @@ const JotRequestSchema = z.object({
   path: ['filename']
 });
 
+const JotResponseSchema = z.object({
+  jot: z.object({
+    name: z.string().nonempty(),
+    extension: z.string().nonempty(),
+    description: z.string().nullable(),
+    content: z.string(),
+    createdAt: z.date(),
+  })
+})
+
 type JotRequestType = z.infer<typeof JotRequestSchema>
+type JotResponseType = z.infer<typeof JotResponseSchema>
 export {
+    JotRequestSchema,
     JotRequestType,
-    JotRequestSchema ,
+    JotResponseSchema,
+    JotResponseType,
 }

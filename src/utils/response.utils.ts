@@ -24,7 +24,7 @@ function createApiSuccessResponse<T>(
   data: T,
 ): ApiSucessResponse<T> {
   return {
-    success: false,
+    success: true,
     message,
     statusCode,
     data,

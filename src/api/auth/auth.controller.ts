@@ -7,7 +7,7 @@ import {
 } from "./auth.types";
 import validate from "../../zod/validate";
 
-import { BadRequestError, ValidationError } from "../../errors/api/error";
+import { BadRequestError, UnauthorizedError, ValidationError } from "../../errors/api/error";
 import { AuthService } from "./auth.service";
 import {
   ApiSucessResponse,
@@ -18,11 +18,13 @@ import {
   AuthSignupRequest,
   AuthSignupRequestSchema,
   AuthSignupResponse,
+  AuthSignupResponseSchema,
 } from "../../zod/auth/signup.z";
 import {
   AuthLoginRequest,
   AuthLoginRequestSchema,
   AuthLoginResponse,
+  AuthLoginResponseSchema,
 } from "../../zod/auth/login.z";
 import { envData } from "../../env";
 import verifyToken from "../../utils/verify_token.utils";
@@ -37,27 +39,40 @@ export default class AuthController implements IAuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthSignupRequest>(
       AuthSignupRequestSchema,
-      req.body,
+      req.body
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten(),
+        validationResult.error.flatten()
       );
     }
     const registeredUser: IAuthUserDTO = await this.authService.signup(
-      validationResult.data,
+      validationResult.data
     );
     const responseData: AuthSignupResponse = {
       user: registeredUser,
     };
 
+    const responseValidation = validate<AuthSignupResponse>(
+      AuthSignupResponseSchema,
+      responseData
+    );
+
+    if (!responseValidation.success) {
+      throw new ValidationError(
+        "Invalid response format",
+        "VALIDATION_ERROR",
+        responseValidation.error.flatten()
+      );
+    }
+
     const successResponse = createApiSuccessResponse<AuthSignupResponse>(
       "User registered successfully",
       201,
-      responseData,
+      responseData
     );
     return sendApiResponse(res, successResponse);
   }
@@ -65,14 +80,14 @@ export default class AuthController implements IAuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthLoginRequest>(
       AuthLoginRequestSchema,
-      req.body,
+      req.body
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error,
+        validationResult.error
       );
     }
 
@@ -81,6 +96,19 @@ export default class AuthController implements IAuthController {
       user: loggedInUser.user,
       accessToken: loggedInUser.accessToken,
     };
+
+    const responseValidation = validate<AuthLoginResponse>(
+      AuthLoginResponseSchema,
+      responseData
+    );
+
+    if (!responseValidation.success) {
+      throw new ValidationError(
+        "Invalid response format",
+        "VALIDATION_ERROR",
+        responseValidation.error.flatten()
+      );
+    }
 
     const successResponse: ApiSucessResponse<AuthLoginResponse> = {
       success: true,
@@ -94,18 +122,20 @@ export default class AuthController implements IAuthController {
       maxAge: 1 * 24 * 60 * 60 * 1000,
       secure: envData.NODE_ENV === "production" ? true : false,
     });
-    
+
     return res.status(successResponse.statusCode).json(successResponse);
   }
 
   async authenticationStatus(req: Request, res: Response, next: NextFunction) {
     const jwtCookie = req.cookies["jot_access_token"];
     if (!jwtCookie) {
-      throw new BadRequestError("Access token is not provided");
+      throw new UnauthorizedError("Unauthorized request");
     }
 
-    // TODO: Send appropriate message if the token failed the verification
-    verifyToken(req, jwtCookie);
+    // this throws an error if the jwt verification fails, which is then
+    // caught by the asyncErrorHandler that wraps around the route which uses
+    // this function (authenticationStatus)
+    verifyToken(req, jwtCookie);  
     const successResponse: ApiSucessResponse<IAuthStatus> = {
       success: true,
       message: "Authentication status retrived successfully",
