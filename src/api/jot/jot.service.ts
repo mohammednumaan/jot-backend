@@ -22,7 +22,7 @@ export class JotService implements IJotService {
       this.jotGroupDB.createJotGroup(userId)
     );
 
-    const jotNameArr = jotData.filename.split(".");
+    const jotNameArr = jotData.name.split(".");
     const jotExtension = jotNameArr[jotNameArr.length - 1];
     const jotName = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
     const jot: IJot = await prismaErrorHandler<IJot>(() =>
@@ -30,7 +30,7 @@ export class JotService implements IJotService {
         jotName,
         jotExtension,
         jotData.description,
-        jotData.fileContent,
+        jotData.content,
         jotGroup.id
       )
     );

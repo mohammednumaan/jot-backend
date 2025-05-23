@@ -3,13 +3,14 @@ import validateFileExtension from "../../utils/validate_file_extension.utils";
 
 const JotRequestSchema = z
   .object({
-    filename: z.string().trim().min(1, "Filename is required"),
-    fileContent: z.string().trim().min(1, "File content is required"),
+    name: z.string().trim().min(1, "Filename is required"),
+    content: z.string().trim().min(1, "File content is required"),
     description: z.string().trim().nullable(),
   })
   .refine(
     (data) => {
-      const fileNameArr = data.filename.split(".");
+      console.log(data)
+      const fileNameArr = data.name.split(".");
       return validateFileExtension(fileNameArr[fileNameArr.length - 1]);
     },
     {
