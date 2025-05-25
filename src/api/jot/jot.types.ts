@@ -10,7 +10,7 @@ interface IJotController {
 interface IJotService {
   create: (jotData: JotRequestType, userId: string) => Promise<IJotDTO>;
   getById: (jotId: string, userId: string) => Promise<IJot>;
-  getAll: () => Promise<IJot[]>;
+  getAll: (offset: number, limit: number) => Promise<IJot[]>;
 }
 
 interface IJot {

@@ -24,9 +24,20 @@ export class JotDB {
     return newJot;
   }
 
-  async getAllJots(): Promise<IJot[]>{
-    const jots = await prisma.jot.findMany();
+  async getAllJots(offset: number, limit: number): Promise<IJot[]>{
+    const jots = await prisma.jot.findMany({
+      skip: offset,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     return jots;
+  }
+
+  async getAllJotsCount(): Promise<number> {
+    const count = await prisma.jot.count();
+    return count;
   }
 
   async getJotById(jotId: string): Promise<IJot | null>{

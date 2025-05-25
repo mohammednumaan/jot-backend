@@ -39,12 +39,21 @@ export class JotService implements IJotService {
     return mappedJot;
   }
 
-  async getAll() {
+  async getAll(offset: number, limit: number) {
+
     const jots = await prismaErrorHandler<IJot[]>(() =>
-      this.jotDB.getAllJots()
+      this.jotDB.getAllJots(offset, limit)
     );
     return jots;
   }
+
+  async getAllCount() {
+    const count = await prismaErrorHandler<number>(() =>
+      this.jotDB.getAllJotsCount()
+    );
+    return count;
+  }
+  
   async getById(jotId: string) {
     const jot = await prismaErrorHandler<IJot | null>(() =>
       this.jotDB.getJotById(jotId)

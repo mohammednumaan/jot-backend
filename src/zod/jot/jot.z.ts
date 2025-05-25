@@ -19,6 +19,7 @@ const JotRequestSchema = z
     }
   );
 
+  
 const JotResponseSchema = z.object({
   jot: z.object({
     name: z.string().nonempty(),
@@ -27,6 +28,11 @@ const JotResponseSchema = z.object({
     content: z.string(),
     createdAt: z.date(),
   }),
+});
+
+
+const allJotsRequestSchema = z.object({
+  page: z.coerce.number().int().nonnegative().default(1),
 });
 
 const allJotsResponseSchema = z.object({
@@ -41,11 +47,18 @@ const allJotsResponseSchema = z.object({
       updatedAt: z.date(),
     })
   ),
+  
+  pagination : z.object({
+    page: z.number().int().nonnegative(),
+    size: z.number().int().nonnegative(),
+    totalPages: z.number().int().nonnegative(),
+  })
 });
 
 type JotRequestType = z.infer<typeof JotRequestSchema>;
 type JotResponseType = z.infer<typeof JotResponseSchema>;
 type AllJotsType = z.infer<typeof allJotsResponseSchema>;
+type AllJotsRequestType = z.infer<typeof allJotsRequestSchema>;
 
 export {
   JotRequestSchema,
@@ -54,4 +67,6 @@ export {
   JotResponseType,
   allJotsResponseSchema,
   AllJotsType,
+  allJotsRequestSchema,
+  AllJotsRequestType
 };
