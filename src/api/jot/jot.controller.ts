@@ -37,32 +37,27 @@ export default class JotController implements IJotController {
         validationResult.error.flatten()
       );
     }
+    await this.jotService.create(validationResult.data, req.user.id);
+    // const responseData: JotResponseType = {
+    //   jot: createdJot,
+    // };
 
-    const createdJot: IJotDTO = await this.jotService.create(
-      validationResult.data,
-      req.user.id
-    );
-    const responseData: JotResponseType = {
-      jot: createdJot,
-    };
+    // const responseValidation = validate<JotResponseType>(
+    //   JotResponseSchema,
+    //   responseData
+    // );
 
-    const responseValidation = validate<JotResponseType>(
-      JotResponseSchema,
-      responseData
-    );
-
-    if (!responseValidation.success) {
-      throw new ValidationError(
-        "Invalid response format",
-        "VALIDATION_ERROR",
-        responseValidation.error.flatten()
-      );
-    }
-
-    const successResponse = createApiSuccessResponse<JotResponseType>(
+    // if (!responseValidation.success) {
+    //   throw new ValidationError(
+    //     "Invalid response format",
+    //     "VALIDATION_ERROR",
+    //     responseValidation.error.flatten()
+    //   );
+    // }
+    const successResponse = createApiSuccessResponse(
       "Jot created successfully",
       201,
-      responseData
+      null
     );
 
     return sendApiResponse(res, successResponse);

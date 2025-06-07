@@ -1,25 +1,28 @@
 import { z } from "zod";
 import validateFileExtension from "../../utils/validate_file_extension.utils";
 
-const JotRequestSchema = z
-  .object({
-    name: z.string().trim().min(1, "Filename is required"),
-    content: z.string().trim().min(1, "File content is required"),
-    description: z.string().trim().nullable(),
-  })
-  .refine(
-    (data) => {
-      console.log(data)
-      const fileNameArr = data.name.split(".");
-      return validateFileExtension(fileNameArr[fileNameArr.length - 1]);
-    },
-    {
-      message: "Invalid file extension. Please provide a valid file extension",
-      path: ["filename"],
-    }
-  );
+const JotRequestSchema = z.object({
+  jots: z.array(
+    z
+      .object({
+        name: z.string().trim().min(1, "Filename is required"),
+        content: z.string().trim().min(1, "File content is required"),
+      })
+      .refine(
+        (data) => {
+          const fileNameArr = data.name.split(".");
+          return validateFileExtension(fileNameArr[fileNameArr.length - 1]);
+        },
+        {
+          message:
+            "Invalid file extension. Please provide a valid file extension",
+          path: ["filename"],
+        }
+      )
+  ),
+  description: z.string().nullable(),
+});
 
-  
 const JotResponseSchema = z.object({
   jot: z.object({
     name: z.string().nonempty(),
@@ -29,7 +32,6 @@ const JotResponseSchema = z.object({
     createdAt: z.date(),
   }),
 });
-
 
 const allJotsRequestSchema = z.object({
   page: z.coerce.number().int().nonnegative().default(1),
@@ -47,12 +49,12 @@ const allJotsResponseSchema = z.object({
       updatedAt: z.date(),
     })
   ),
-  
-  pagination : z.object({
+
+  pagination: z.object({
     page: z.number().int().nonnegative(),
     size: z.number().int().nonnegative(),
     totalPages: z.number().int().nonnegative(),
-  })
+  }),
 });
 
 type JotRequestType = z.infer<typeof JotRequestSchema>;
@@ -68,5 +70,5 @@ export {
   allJotsResponseSchema,
   AllJotsType,
   allJotsRequestSchema,
-  AllJotsRequestType
+  AllJotsRequestType,
 };

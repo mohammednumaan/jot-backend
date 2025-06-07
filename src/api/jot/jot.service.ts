@@ -22,25 +22,23 @@ export class JotService implements IJotService {
       this.jotGroupDB.createJotGroup(userId)
     );
 
-    const jotNameArr = jotData.name.split(".");
-    const jotExtension = jotNameArr[jotNameArr.length - 1];
-    const jotName = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
-    const jot: IJot = await prismaErrorHandler<IJot>(() =>
-      this.jotDB.createJot(
-        jotName,
-        jotExtension,
-        jotData.description,
-        jotData.content,
-        jotGroup.id
-      )
-    );
-
-    const mappedJot: IJotDTO = this.mapper.mapToNewJot(jot);
-    return mappedJot;
+    for (const jots of jotData.jots) {
+      const jotNameArr = jots.name.split(".");
+      const jotExtension = jotNameArr[jotNameArr.length - 1];
+      const jotName = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
+      const jot: IJot = await prismaErrorHandler<IJot>(() =>
+        this.jotDB.createJot(
+          jotName,
+          jotExtension,
+          jotData.description,
+          jots.content,
+          jotGroup.id
+        )
+      );
+    }
   }
 
   async getAll(offset: number, limit: number) {
-
     const jots = await prismaErrorHandler<IJot[]>(() =>
       this.jotDB.getAllJots(offset, limit)
     );
@@ -53,7 +51,7 @@ export class JotService implements IJotService {
     );
     return count;
   }
-  
+
   async getById(jotId: string) {
     const jot = await prismaErrorHandler<IJot | null>(() =>
       this.jotDB.getJotById(jotId)
