@@ -22,6 +22,7 @@ export class JotService implements IJotService {
       this.jotGroupDB.createJotGroup(userId)
     );
 
+    const createdDate = new Date();
     for (const jots of jotData.jots) {
       const jotNameArr = jots.name.split(".");
       const jotExtension = jotNameArr[jotNameArr.length - 1];
@@ -39,9 +40,19 @@ export class JotService implements IJotService {
   }
 
   async getAll(offset: number, limit: number) {
-    const jots = await prismaErrorHandler<IJot[]>(() =>
-      this.jotDB.getAllJots(offset, limit)
+    const jotGroups = await prismaErrorHandler<IJotGroup[]>(() =>
+      this.jotGroupDB.getAllJotGroups(offset, limit)
     );
+
+    let jots: IJot[] = [];
+    for (const group of jotGroups) {
+      const jot = await prismaErrorHandler<IJot[]>(() =>
+        this.jotDB.getFirstJotByGroupId(group.id)
+      );
+      console.log(jot);
+
+      jots.push(jot[0]);
+    }
     return jots;
   }
 

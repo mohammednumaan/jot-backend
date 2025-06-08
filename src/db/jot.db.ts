@@ -7,16 +7,17 @@ export class JotDB {
     extension: string,
     description: string | null,
     content: string,
-    jotGroupId: string
+    jotGroupId: string,
   ): Promise<IJot> {
+    const createdAt = new Date();
     const newJot = await prisma.jot.create({
       data: {
         name,
         extension,
         description,
         content,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: createdAt,
+        updatedAt: createdAt,
         jotGroup: { connect: { id: jotGroupId } },
       },
     });
@@ -45,6 +46,20 @@ export class JotDB {
       where: {
         id: jotId,
       },
+    });
+
+    return jot;
+  }
+
+  async getFirstJotByGroupId(jotGroupId: string){
+    const jot = await prisma.jot.findMany({
+      where: {
+        jotGroupId: jotGroupId,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      take: 1, 
     });
 
     return jot;

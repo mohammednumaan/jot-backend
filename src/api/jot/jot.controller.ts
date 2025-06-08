@@ -93,6 +93,7 @@ export default class JotController implements IJotController {
         `Page must be between 1 and ${totalPages}`
       );
     }
+    console.log(allJots);
 
     const responseData: AllJotsType = {
       jots: allJots,

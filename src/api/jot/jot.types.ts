@@ -31,5 +31,5 @@ interface IJotGroup {
   updatedAt: Date;
 }
 
-type IJotDTO = Omit<IJot, "id" | "updatedAt" | "jotGroupId">;
+type IJotDTO = Omit<IJot, "id" | "jotGroupId">;
 export { IJotController, IJotService, IJot, IJotGroup, IJotDTO };
