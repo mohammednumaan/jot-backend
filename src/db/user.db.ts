@@ -2,10 +2,20 @@ import prisma from "./prisma";
 import { IUser } from "../api/user/user.types";
 
 export class UserDB {
-  async findOneUser(email: string): Promise<IUser | null> {
+  async findOneUserByEmail(email: string): Promise<IUser | null> {
     const user = await prisma.user.findUnique({
       where: {
         email: email,
+      },
+    });
+
+    return user;
+  }
+
+  async findOneUserById(id: string): Promise<IUser | null> {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: id,
       },
     });
 

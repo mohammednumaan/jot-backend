@@ -22,7 +22,7 @@ export class AuthService implements IAuthService {
     this.userDB = new UserDB();
   }
   async signup(signupData: AuthSignupRequest): Promise<IAuthUserDTO> {
-    const existingUser = await this.userDB.findOneUser(signupData.email);
+    const existingUser = await this.userDB.findOneUserByEmail(signupData.email);
     if (existingUser) {
       throw new BadRequestError("Email already exists");
     }
@@ -45,7 +45,7 @@ export class AuthService implements IAuthService {
 
   async login(loginData: AuthLoginRequest): Promise<IAuthLoginDTO> {
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.userDB.findOneUser(loginData.email),
+      this.userDB.findOneUserByEmail(loginData.email),
     );
 
     if (!user) {
