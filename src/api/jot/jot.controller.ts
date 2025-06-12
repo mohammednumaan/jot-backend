@@ -1,16 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { JotService } from "./jot.service";
-import { IJotController, IJotDTO } from "./jot.types";
+import { IJot, IJotDTO } from "./jot.types";
 import validate from "../../zod/validate";
 import {
-  allJotsRequestSchema,
-  AllJotsRequestType,
-  allJotsResponseSchema,
-  AllJotsType,
-  JotRequestSchema,
-  JotRequestType,
-  JotResponseSchema,
-  JotResponseType,
+  GetAllJotsRequestSchema,
+  GetAllJotsRequestType,
+  GetAllJotResponseType,
+  CreateJotRequestSchema,
+  CreateJotRequestType,
+  GetAllJotsResponseSchema,
 } from "../../zod/jot/jot.z";
 import { ValidationError } from "../../errors/api/error";
 import {
@@ -18,15 +16,15 @@ import {
   sendApiResponse,
 } from "../../utils/response.utils";
 
-export default class JotController implements IJotController {
+export default class JotController {
   private readonly jotService: JotService;
   constructor() {
     this.jotService = new JotService();
   }
 
   async create(req: Request, res: Response, next: NextFunction) {
-    const validationResult = validate<JotRequestType>(
-      JotRequestSchema,
+    const validationResult = validate<CreateJotRequestType>(
+      CreateJotRequestSchema,
       req.body
     );
 
@@ -64,9 +62,9 @@ export default class JotController implements IJotController {
   }
 
   async getAll(req: Request, res: Response, next: NextFunction) {
-    const validationResult = validate<AllJotsRequestType>(
-      allJotsRequestSchema,
-      req.query as unknown as { page: number }
+    const validationResult = validate<GetAllJotsRequestType>(
+      GetAllJotsRequestSchema,
+      req.params as unknown as { page: number }
     );
 
     if (!validationResult.success) {
@@ -81,10 +79,11 @@ export default class JotController implements IJotController {
     const requestedLimit = 10;
     const offset = (requestedPage - 1) * requestedLimit;
 
-    const allJotsCount = await this.jotService.getAllCount();
-
-    const allJots = await this.jotService.getAll(offset, requestedLimit);
-    const totalPages = Math.ceil(allJotsCount / requestedLimit);
+    const { jotGroups, count } = await this.jotService.getAll(
+      offset,
+      requestedLimit
+    );
+    const totalPages = Math.ceil(count / requestedLimit);
 
     if (requestedPage > totalPages) {
       throw new ValidationError(
@@ -93,10 +92,9 @@ export default class JotController implements IJotController {
         `Page must be between 1 and ${totalPages}`
       );
     }
-    console.log(allJots);
 
-    const responseData: AllJotsType = {
-      jots: allJots,
+    const responseData: GetAllJotResponseType = {
+      jots: jotGroups,
       pagination: {
         page: requestedPage,
         size: requestedLimit,
@@ -104,8 +102,8 @@ export default class JotController implements IJotController {
       },
     };
 
-    const responseValidation = validate<AllJotsType>(
-      allJotsResponseSchema,
+    const responseValidation = validate<GetAllJotResponseType>(
+      GetAllJotsResponseSchema,
       responseData
     );
 
@@ -117,39 +115,10 @@ export default class JotController implements IJotController {
       );
     }
 
-    const successResponse = createApiSuccessResponse<AllJotsType>(
+    const successResponse = createApiSuccessResponse<GetAllJotResponseType>(
       "Jot retrieved successfully",
       200,
       responseValidation.data
-    );
-
-    return sendApiResponse(res, successResponse);
-  }
-
-  async getById(req: Request, res: Response, next: NextFunction) {
-    const jotId = req.params.jotId;
-    const jot: IJotDTO = await this.jotService.getById(jotId);
-    const responseData: JotResponseType = {
-      jot,
-    };
-
-    const responseValidation = validate<JotResponseType>(
-      JotResponseSchema,
-      responseData
-    );
-
-    if (!responseValidation.success) {
-      throw new ValidationError(
-        "Invalid response format",
-        "VALIDATION_ERROR",
-        responseValidation.error.flatten()
-      );
-    }
-
-    const successResponse = createApiSuccessResponse<JotResponseType>(
-      "Jot retrieved successfully",
-      200,
-      responseData
     );
 
     return sendApiResponse(res, successResponse);

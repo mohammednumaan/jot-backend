@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { zUserSchema } from "../user/user.z";
+import { UserSchema } from "./login.z";
 
-// AUTH SIGNUP REQUEST SCHEMA
+// auth signup request schema
 const AuthSignupRequestSchema = z
   .object({
     email: z
@@ -34,18 +34,18 @@ const AuthSignupRequestSchema = z
     },
   );
 
-// AUTH SIGNUP RESPONSE SCHEMA
+// auth signup response schema
 const AuthSignupResponseSchema = z.object({
-  user: zUserSchema,
+  user: UserSchema,
 });
 
-// AUTH REQUEST AND RESPONSE INFERRED TYPES
-type AuthSignupRequest = z.infer<typeof AuthSignupRequestSchema>;
-type AuthSignupResponse = z.infer<typeof AuthSignupResponseSchema>;
+// auth signup request and response types
+type AuthSignupRequestType = z.infer<typeof AuthSignupRequestSchema>;
+type AuthSignupResponseType = z.infer<typeof AuthSignupResponseSchema>;
 
 export {
-  AuthSignupRequest,
+  AuthSignupRequestType,
   AuthSignupRequestSchema,
-  AuthSignupResponse,
+  AuthSignupResponseType,
   AuthSignupResponseSchema,
 };

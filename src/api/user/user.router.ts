@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response, Router } from "express";
-import JotController from "./jot.controller";
 import { asyncErrorHandler } from "../../errors/api/error.handler";
 import verifyToken from "../../utils/verify_token.utils";
+import { UserController } from "./user.controller";
 
-export default class JotRouter {
+export default class UserRouter {
   private readonly router: Router;
-  private readonly controller: JotController;
+  private readonly controller: UserController;
 
   constructor() {
     this.router = Router();
-    this.controller = new JotController();
+    this.controller = new UserController();
   }
 
   async init(path: string, app: Router) {
@@ -23,13 +23,8 @@ export default class JotRouter {
     );
 
     this.router.get(
-      "/",
-      asyncErrorHandler(this.controller.getAll.bind(this.controller))
-    );
-
-    this.router.post(
-      "/create",
-      asyncErrorHandler(this.controller.create.bind(this.controller))
+      "/:name/:jotGroupId",
+      asyncErrorHandler(this.controller.getJotGroup.bind(this.controller))
     );
   }
   private async attachRouter(path: string, app: Router) {

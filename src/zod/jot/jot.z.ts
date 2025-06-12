@@ -1,7 +1,7 @@
 import { z } from "zod";
 import validateFileExtension from "../../utils/validate_file_extension.utils";
 
-const JotRequestSchema = z.object({
+const CreateJotRequestSchema = z.object({
   jots: z.array(
     z
       .object({
@@ -23,21 +23,11 @@ const JotRequestSchema = z.object({
   description: z.string().nullable(),
 });
 
-const JotResponseSchema = z.object({
-  jot: z.object({
-    name: z.string().nonempty(),
-    extension: z.string().nonempty(),
-    description: z.string().nullable(),
-    content: z.string(),
-    createdAt: z.date(),
-  }),
-});
-
-const allJotsRequestSchema = z.object({
+const GetAllJotsRequestSchema = z.object({
   page: z.coerce.number().int().nonnegative().default(1),
 });
 
-const allJotsResponseSchema = z.object({
+const GetAllJotsResponseSchema = z.object({
   jots: z.array(
     z.object({
       id: z.string(),
@@ -47,6 +37,15 @@ const allJotsResponseSchema = z.object({
       content: z.string(),
       createdAt: z.date(),
       updatedAt: z.date(),
+
+      owner: z.object({
+        id: z.string(),
+        name: z.string().nonempty(),
+      }),
+      jotGroup: z.object({
+        id: z.string(),
+        totalFiles: z.number().int().nonnegative(),
+      }),
     })
   ),
 
@@ -57,18 +56,15 @@ const allJotsResponseSchema = z.object({
   }),
 });
 
-type JotRequestType = z.infer<typeof JotRequestSchema>;
-type JotResponseType = z.infer<typeof JotResponseSchema>;
-type AllJotsType = z.infer<typeof allJotsResponseSchema>;
-type AllJotsRequestType = z.infer<typeof allJotsRequestSchema>;
+type CreateJotRequestType = z.infer<typeof CreateJotRequestSchema>;
+type GetAllJotsRequestType = z.infer<typeof GetAllJotsRequestSchema>;
+type GetAllJotResponseType = z.infer<typeof GetAllJotsResponseSchema>;
 
 export {
-  JotRequestSchema,
-  JotRequestType,
-  JotResponseSchema,
-  JotResponseType,
-  allJotsResponseSchema,
-  AllJotsType,
-  allJotsRequestSchema,
-  AllJotsRequestType,
+  CreateJotRequestSchema,
+  CreateJotRequestType,
+  GetAllJotsResponseSchema,
+  GetAllJotResponseType,
+  GetAllJotsRequestSchema,
+  GetAllJotsRequestType,
 };

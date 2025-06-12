@@ -51,17 +51,16 @@ export class JotDB {
     return jot;
   }
 
-  async getFirstJotByGroupId(jotGroupId: string){
-    const jot = await prisma.jot.findMany({
+  async getJotsByGroupId(jotGroupId: string){
+    const jots = await prisma.jot.findMany({
       where: {
         jotGroupId: jotGroupId,
       },
       orderBy: {
         createdAt: "asc",
       },
-      take: 1, 
     });
-
-    return jot;
+    
+    return jots;
   }
 }

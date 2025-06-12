@@ -2,6 +2,16 @@ import { IJotGroup } from "../api/jot/jot.types";
 import prisma from "./prisma";
 
 export class JotGroupDB {
+  async findOneJotGroup(jotGroupId: string){
+    const jotGroup = await prisma.jotGroup.findFirst({
+      where: {
+        id: jotGroupId
+      }
+    });
+
+    return jotGroup;
+  }
+  
   async createJotGroup(userId: string): Promise<IJotGroup> {
     const newJotGroup = await prisma.jotGroup.create({
       data: {
@@ -22,6 +32,7 @@ export class JotGroupDB {
         createdAt: "desc",
       },
     });
-    return jotGroups;
+    return { jotGroups, count: jotGroups.length };
   }
+
 }

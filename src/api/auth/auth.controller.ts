@@ -1,13 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import {
-  IAuthController,
   IAuthLoginDTO,
-  IAuthStatus,
   IAuthUserDTO,
+  AuthStatusType
 } from "./auth.types";
 import validate from "../../zod/validate";
 
-import { BadRequestError, UnauthorizedError, ValidationError } from "../../errors/api/error";
+import {
+  UnauthorizedError,
+  ValidationError,
+} from "../../errors/api/error";
 import { AuthService } from "./auth.service";
 import {
   ApiSucessResponse,
@@ -15,21 +17,21 @@ import {
   sendApiResponse,
 } from "../../utils/response.utils";
 import {
-  AuthSignupRequest,
+  AuthSignupRequestType,
   AuthSignupRequestSchema,
-  AuthSignupResponse,
+  AuthSignupResponseType,
   AuthSignupResponseSchema,
 } from "../../zod/auth/signup.z";
 import {
-  AuthLoginRequest,
+  AuthLoginRequestType,
   AuthLoginRequestSchema,
-  AuthLoginResponse,
+  AuthLoginResponseType,
   AuthLoginResponseSchema,
 } from "../../zod/auth/login.z";
 import { envData } from "../../env";
 import verifyToken from "../../utils/verify_token.utils";
 
-export default class AuthController implements IAuthController {
+export default class AuthController {
   private readonly authService: AuthService;
 
   constructor() {
@@ -37,7 +39,7 @@ export default class AuthController implements IAuthController {
   }
 
   async signup(req: Request, res: Response, next: NextFunction) {
-    const validationResult = validate<AuthSignupRequest>(
+    const validationResult = validate<AuthSignupRequestType>(
       AuthSignupRequestSchema,
       req.body
     );
@@ -52,11 +54,11 @@ export default class AuthController implements IAuthController {
     const registeredUser: IAuthUserDTO = await this.authService.signup(
       validationResult.data
     );
-    const responseData: AuthSignupResponse = {
+    const responseData: AuthSignupResponseType = {
       user: registeredUser,
     };
 
-    const responseValidation = validate<AuthSignupResponse>(
+    const responseValidation = validate<AuthSignupResponseType>(
       AuthSignupResponseSchema,
       responseData
     );
@@ -69,7 +71,7 @@ export default class AuthController implements IAuthController {
       );
     }
 
-    const successResponse = createApiSuccessResponse<AuthSignupResponse>(
+    const successResponse = createApiSuccessResponse<AuthSignupResponseType>(
       "User registered successfully",
       201,
       responseData
@@ -78,7 +80,7 @@ export default class AuthController implements IAuthController {
   }
 
   async login(req: Request, res: Response, next: NextFunction) {
-    const validationResult = validate<AuthLoginRequest>(
+    const validationResult = validate<AuthLoginRequestType>(
       AuthLoginRequestSchema,
       req.body
     );
@@ -97,7 +99,7 @@ export default class AuthController implements IAuthController {
       accessToken: loggedInUser.accessToken,
     };
 
-    const responseValidation = validate<AuthLoginResponse>(
+    const responseValidation = validate<AuthLoginResponseType>(
       AuthLoginResponseSchema,
       responseData
     );
@@ -110,7 +112,7 @@ export default class AuthController implements IAuthController {
       );
     }
 
-    const successResponse: ApiSucessResponse<AuthLoginResponse> = {
+    const successResponse: ApiSucessResponse<AuthLoginResponseType> = {
       success: true,
       message: "User logged-in successfully",
       statusCode: 200,
@@ -135,8 +137,8 @@ export default class AuthController implements IAuthController {
     // this throws an error if the jwt verification fails, which is then
     // caught by the asyncErrorHandler that wraps around the route which uses
     // this function (authenticationStatus)
-    verifyToken(req, jwtCookie);  
-    const successResponse: ApiSucessResponse<IAuthStatus> = {
+    verifyToken(req, jwtCookie);
+    const successResponse: ApiSucessResponse<AuthStatusType> = {
       success: true,
       message: "Authentication status retrived successfully",
       statusCode: 200,

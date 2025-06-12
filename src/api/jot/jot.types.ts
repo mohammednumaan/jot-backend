@@ -1,18 +1,3 @@
-import { NextFunction, Request, Response } from "express";
-import { JotRequestType } from "../../zod/jot/jot.z";
-
-interface IJotController {
-  create: (req: Request, res: Response, next: NextFunction) => void;
-  getById: (req: Request, res: Response, next: NextFunction) => void;
-  getAll: (req: Request, res: Response, next: NextFunction) => void;
-}
-
-interface IJotService {
-  create: (jotData: JotRequestType, userId: string) => Promise<void>;
-  getById: (jotId: string, userId: string) => Promise<IJot>;
-  getAll: (offset: number, limit: number) => Promise<IJot[]>;
-}
-
 interface IJot {
   id: string;
   name: string;
@@ -31,5 +16,21 @@ interface IJotGroup {
   updatedAt: Date;
 }
 
+interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId"> {
+  owner: {
+    id: string;
+    name: string;
+  };
+  jotGroup: {
+    id: string;
+    totalFiles: number;
+  };
+}
+
+interface IJotGroupsWithCount {
+  jotGroups: IJotGroup[];
+  count: number;
+}
+
 type IJotDTO = Omit<IJot, "id" | "jotGroupId">;
-export { IJotController, IJotService, IJot, IJotGroup, IJotDTO };
+export { IJot, IJotGroup, IJotWithOwnerAndGroup, IJotDTO, IJotGroupsWithCount };
