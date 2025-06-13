@@ -2,7 +2,6 @@ import { z } from "zod";
 
 // user schema
 const UserSchema = z.object({
-  email: z.string().email("Invalid email format"),
   username: z.string(),
   avatar: z.string(),
   joinedAt: z.date(),
@@ -10,7 +9,7 @@ const UserSchema = z.object({
 
 // auth login request schema
 const AuthLoginRequestSchema = z.object({
-  email: z.string().trim().email("Invalid email format"),
+  username: z.string({ required_error: "Username is required"}).trim(),
   password: z.string({ required_error: "Password is required" }).trim(),
 });
 

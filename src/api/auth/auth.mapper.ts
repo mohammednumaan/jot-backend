@@ -4,7 +4,6 @@ import { IAuthLoginDTO, IAuthUserDTO } from "./auth.types";
 export class AuthMapper {
   mapToSignupUser(user: IUser): IAuthUserDTO {
     return {
-      email: user.email,
       username: user.username,
       avatar: user.avatar,
       joinedAt: user.joinedAt,
@@ -14,7 +13,6 @@ export class AuthMapper {
   mapToLoginUser(user: IUser, access_token: string): IAuthLoginDTO {
     return {
       user: {
-        email: user.email,
         username: user.username,
         avatar: user.avatar,
         joinedAt: user.joinedAt,

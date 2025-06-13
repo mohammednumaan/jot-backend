@@ -21,9 +21,9 @@ export class AuthService {
     this.userDB = new UserDB();
   }
   async signup(signupData: AuthSignupRequestType): Promise<IAuthUserDTO> {
-    const existingUser = await this.userDB.findOneUserByEmail(signupData.email);
+    const existingUser = await this.userDB.findOneUserByUsername(signupData.username);
     if (existingUser) {
-      throw new BadRequestError("Email already exists");
+      throw new BadRequestError("Username already exists");
     }
 
     const hashedPassword = await bcrypt.hash(
@@ -32,9 +32,8 @@ export class AuthService {
     );
     const user: IUser = await prismaErrorHandler<IUser>(() =>
       this.userDB.createUser(
-        signupData.email,
-        hashedPassword,
         signupData.username,
+        hashedPassword,
       ),
     );
 
@@ -44,7 +43,7 @@ export class AuthService {
 
   async login(loginData: AuthLoginRequestType): Promise<IAuthLoginDTO> {
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.userDB.findOneUserByEmail(loginData.email),
+      this.userDB.findOneUserByUsername(loginData.username),
     );
 
     if (!user) {

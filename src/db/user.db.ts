@@ -2,10 +2,10 @@ import prisma from "./prisma";
 import { IUser } from "../api/user/user.types";
 
 export class UserDB {
-  async findOneUserByEmail(email: string): Promise<IUser | null> {
+  async findOneUserByUsername(username: string): Promise<IUser | null> {
     const user = await prisma.user.findUnique({
       where: {
-        email: email,
+        username: username,
       },
     });
 
@@ -23,15 +23,13 @@ export class UserDB {
   }
 
   async createUser(
-    email: string,
-    password: string,
     username: string,
+    password: string,
   ): Promise<IUser> {
     const newUser = await prisma.user.create({
       data: {
-        email,
-        password,
         username: username || "new_user",
+        password,
         avatar: "",
         joinedAt: new Date(),
       },

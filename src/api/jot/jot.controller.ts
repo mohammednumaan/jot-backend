@@ -85,7 +85,7 @@ export default class JotController {
     );
     const totalPages = Math.ceil(count / requestedLimit);
 
-    if (requestedPage > totalPages) {
+    if (totalPages && requestedPage > totalPages) {
       throw new ValidationError(
         "Invalid page number",
         "VALIDATION_ERROR",
