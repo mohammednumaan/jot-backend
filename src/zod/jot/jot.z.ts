@@ -33,7 +33,6 @@ const GetAllJotsResponseSchema = z.object({
       id: z.string(),
       name: z.string().nonempty(),
       extension: z.string().nonempty(),
-      description: z.string().nullable(),
       content: z.string(),
       createdAt: z.date(),
       updatedAt: z.date(),
@@ -45,6 +44,7 @@ const GetAllJotsResponseSchema = z.object({
       jotGroup: z.object({
         id: z.string(),
         totalFiles: z.number().int().nonnegative(),
+        description: z.string().nullable()
       }),
     }),
   ),

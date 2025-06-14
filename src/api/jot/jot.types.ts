@@ -2,7 +2,6 @@ interface IJot {
   id: string;
   name: string;
   extension: string;
-  description: string | null;
   content: string;
   createdAt: Date;
   updatedAt: Date;
@@ -11,12 +10,14 @@ interface IJot {
 
 interface IJotGroup {
   id: string;
+  description: string | null;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId"> {
+interface IJotWithOwnerAndGroup
+  extends Omit<IJot, "jotGroupId" | "description"> {
   owner: {
     id: string;
     name: string;
@@ -24,6 +25,7 @@ interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId"> {
   jotGroup: {
     id: string;
     totalFiles: number;
+    description: string | null;
   };
 }
 

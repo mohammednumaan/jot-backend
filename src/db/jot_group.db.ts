@@ -12,10 +12,14 @@ export class JotGroupDB {
     return jotGroup;
   }
 
-  async createJotGroup(userId: string): Promise<IJotGroup> {
+  async createJotGroup(
+    userId: string,
+    description: string | null
+  ): Promise<IJotGroup> {
     const newJotGroup = await prisma.jotGroup.create({
       data: {
         user: { connect: { id: userId } },
+        description: description,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

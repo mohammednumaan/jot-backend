@@ -28,7 +28,6 @@ model Jot {
   name String
 
   extension String @default("txt")
-  description String?
   content String
 
   createdAt DateTime @default(now())
@@ -42,6 +41,7 @@ model JotGroup {
   id String @id @default(uuid())
   jots Jot[]
   
+  description String?
   user User @relation(fields: [userId], references: [id])
   userId String
 

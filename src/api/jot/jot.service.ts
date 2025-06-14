@@ -24,7 +24,7 @@ export class JotService {
 
   async create(jotData: CreateJotRequestType, userId: string) {
     const jotGroup: IJotGroup = await prismaErrorHandler<IJotGroup>(() =>
-      this.jotGroupDB.createJotGroup(userId),
+      this.jotGroupDB.createJotGroup(userId, jotData.description),
     );
 
     for (const jots of jotData.jots) {
@@ -35,7 +35,6 @@ export class JotService {
         this.jotDB.createJot(
           jotName,
           jotExtension,
-          jotData.description,
           jots.content,
           jotGroup.id,
         ),
@@ -70,6 +69,7 @@ export class JotService {
         jotGroup: {
           id: group.id,
           totalFiles: jots.length,
+          description: group.description
         },
       };
 

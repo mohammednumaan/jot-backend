@@ -5,7 +5,6 @@ export class JotDB {
   async createJot(
     name: string,
     extension: string,
-    description: string | null,
     content: string,
     jotGroupId: string,
   ): Promise<IJot> {
@@ -14,7 +13,6 @@ export class JotDB {
       data: {
         name,
         extension,
-        description,
         content,
         createdAt: createdAt,
         updatedAt: createdAt,
