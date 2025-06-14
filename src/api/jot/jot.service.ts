@@ -24,38 +24,38 @@ export class JotService {
 
   async create(jotData: CreateJotRequestType, userId: string) {
     const jotGroup: IJotGroup = await prismaErrorHandler<IJotGroup>(() =>
-      this.jotGroupDB.createJotGroup(userId)
+      this.jotGroupDB.createJotGroup(userId),
     );
 
     for (const jots of jotData.jots) {
       const jotNameArr = jots.name.split(".");
       const jotExtension = jotNameArr[jotNameArr.length - 1];
       const jotName = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
-      const jot: IJot = await prismaErrorHandler<IJot>(() =>
+      await prismaErrorHandler<IJot>(() =>
         this.jotDB.createJot(
           jotName,
           jotExtension,
           jotData.description,
           jots.content,
-          jotGroup.id
-        )
+          jotGroup.id,
+        ),
       );
     }
   }
 
   async getAll(offset: number, limit: number) {
     const { jotGroups, count } = await prismaErrorHandler<IJotGroupsWithCount>(
-      () => this.jotGroupDB.getAllJotGroups(offset, limit)
+      () => this.jotGroupDB.getAllJotGroups(offset, limit),
     );
 
-    let allJots: IJotWithOwnerAndGroup[] = [];
+    const allJots: IJotWithOwnerAndGroup[] = [];
     for (const group of jotGroups) {
       const jots = await prismaErrorHandler<IJot[]>(() =>
-        this.jotDB.getJotsByGroupId(group.id)
+        this.jotDB.getJotsByGroupId(group.id),
       );
 
       const jotOwner = await prismaErrorHandler<IUser | null>(() =>
-        this.userDB.findOneUserById(group.userId)
+        this.userDB.findOneUserById(group.userId),
       );
 
       if (!jotOwner) {

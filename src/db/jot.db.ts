@@ -25,7 +25,7 @@ export class JotDB {
     return newJot;
   }
 
-  async getAllJots(offset: number, limit: number): Promise<IJot[]>{
+  async getAllJots(offset: number, limit: number): Promise<IJot[]> {
     const jots = await prisma.jot.findMany({
       skip: offset,
       take: limit,
@@ -41,7 +41,7 @@ export class JotDB {
     return count;
   }
 
-  async getJotById(jotId: string): Promise<IJot | null>{
+  async getJotById(jotId: string): Promise<IJot | null> {
     const jot = await prisma.jot.findFirst({
       where: {
         id: jotId,
@@ -51,7 +51,7 @@ export class JotDB {
     return jot;
   }
 
-  async getJotsByGroupId(jotGroupId: string){
+  async getJotsByGroupId(jotGroupId: string) {
     const jots = await prisma.jot.findMany({
       where: {
         jotGroupId: jotGroupId,
@@ -60,7 +60,7 @@ export class JotDB {
         createdAt: "asc",
       },
     });
-    
+
     return jots;
   }
 }

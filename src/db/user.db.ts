@@ -22,10 +22,7 @@ export class UserDB {
     return user;
   }
 
-  async createUser(
-    username: string,
-    password: string,
-  ): Promise<IUser> {
+  async createUser(username: string, password: string): Promise<IUser> {
     const newUser = await prisma.user.create({
       data: {
         username: username || "new_user",

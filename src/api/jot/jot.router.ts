@@ -19,17 +19,17 @@ export default class JotRouter {
       asyncErrorHandler((req: Request, res: Response, next: NextFunction) => {
         verifyToken(req, req.cookies["jot_access_token"]);
         next();
-      })
+      }),
     );
 
     this.router.get(
       "/",
-      asyncErrorHandler(this.controller.getAll.bind(this.controller))
+      asyncErrorHandler(this.controller.getAll.bind(this.controller)),
     );
 
     this.router.post(
       "/create",
-      asyncErrorHandler(this.controller.create.bind(this.controller))
+      asyncErrorHandler(this.controller.create.bind(this.controller)),
     );
   }
   private async attachRouter(path: string, app: Router) {

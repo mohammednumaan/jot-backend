@@ -5,7 +5,7 @@ import {
   sendApiResponse,
 } from "../../utils/response.utils";
 
-export function asyncErrorHandler(callback: any) {
+export function asyncErrorHandler(callback: (req: Request, res: Response, next: NextFunction) => void) {
   return async function (req: Request, res: Response, next: NextFunction) {
     try {
       await callback(req, res, next);
@@ -15,7 +15,7 @@ export function asyncErrorHandler(callback: any) {
           error.message,
           error.statusCode,
           error.apiErrorCode,
-          error.description
+          error.description,
         );
         return sendApiResponse(res, errorResponse);
       } else if (error instanceof Error) {
@@ -23,7 +23,7 @@ export function asyncErrorHandler(callback: any) {
           "Something went wrong",
           500,
           "INTERNAL_SERVER_ERROR",
-          error.message
+          error.message,
         );
         return sendApiResponse(res, errorResponse);
       }

@@ -19,12 +19,17 @@ export default class UserRouter {
       asyncErrorHandler((req: Request, res: Response, next: NextFunction) => {
         verifyToken(req, req.cookies["jot_access_token"]);
         next();
-      })
+      }),
+    );
+
+    this.router.get(
+      "/:name/jots",
+      asyncErrorHandler(this.controller.getJots.bind(this.controller)),
     );
 
     this.router.get(
       "/:name/:jotGroupId",
-      asyncErrorHandler(this.controller.getJotGroup.bind(this.controller))
+      asyncErrorHandler(this.controller.getJotGroup.bind(this.controller)),
     );
   }
   private async attachRouter(path: string, app: Router) {

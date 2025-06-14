@@ -12,7 +12,7 @@ interface IErrorValidation {
 
 export default function validate<T>(
   schema: ZodSchema,
-  inputs: T
+  inputs: T,
 ): ISuccessValidation<T> | IErrorValidation {
   const result = schema.safeParse(inputs);
 

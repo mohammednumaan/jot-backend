@@ -27,10 +27,21 @@ interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId"> {
   };
 }
 
+interface IJotGroupWithFileCount extends IJotGroup {
+  totalFiles: number;
+}
+
 interface IJotGroupsWithCount {
   jotGroups: IJotGroup[];
   count: number;
 }
 
 type IJotDTO = Omit<IJot, "id" | "jotGroupId">;
-export { IJot, IJotGroup, IJotWithOwnerAndGroup, IJotDTO, IJotGroupsWithCount };
+export {
+  IJot,
+  IJotGroup,
+  IJotWithOwnerAndGroup,
+  IJotDTO,
+  IJotGroupWithFileCount,
+  IJotGroupsWithCount,
+};

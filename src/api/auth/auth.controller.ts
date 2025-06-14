@@ -1,15 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import {
-  IAuthLoginDTO,
-  IAuthUserDTO,
-  AuthStatusType
-} from "./auth.types";
+import { IAuthLoginDTO, IAuthUserDTO, AuthStatusType } from "./auth.types";
 import validate from "../../zod/validate";
 
-import {
-  UnauthorizedError,
-  ValidationError,
-} from "../../errors/api/error";
+import { UnauthorizedError, ValidationError } from "../../errors/api/error";
 import { AuthService } from "./auth.service";
 import {
   ApiSucessResponse,
@@ -41,18 +34,18 @@ export default class AuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthSignupRequestType>(
       AuthSignupRequestSchema,
-      req.body
+      req.body,
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten()
+        validationResult.error.flatten(),
       );
     }
     const registeredUser: IAuthUserDTO = await this.authService.signup(
-      validationResult.data
+      validationResult.data,
     );
     const responseData: AuthSignupResponseType = {
       user: registeredUser,
@@ -60,21 +53,21 @@ export default class AuthController {
 
     const responseValidation = validate<AuthSignupResponseType>(
       AuthSignupResponseSchema,
-      responseData
+      responseData,
     );
 
     if (!responseValidation.success) {
       throw new ValidationError(
         "Invalid response format",
         "VALIDATION_ERROR",
-        responseValidation.error.flatten()
+        responseValidation.error.flatten(),
       );
     }
 
     const successResponse = createApiSuccessResponse<AuthSignupResponseType>(
       "User registered successfully",
       201,
-      responseData
+      responseData,
     );
     return sendApiResponse(res, successResponse);
   }
@@ -82,14 +75,14 @@ export default class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<AuthLoginRequestType>(
       AuthLoginRequestSchema,
-      req.body
+      req.body,
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error
+        validationResult.error,
       );
     }
 
@@ -101,14 +94,14 @@ export default class AuthController {
 
     const responseValidation = validate<AuthLoginResponseType>(
       AuthLoginResponseSchema,
-      responseData
+      responseData,
     );
 
     if (!responseValidation.success) {
       throw new ValidationError(
         "Invalid response format",
         "VALIDATION_ERROR",
-        responseValidation.error.flatten()
+        responseValidation.error.flatten(),
       );
     }
 

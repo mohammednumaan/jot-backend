@@ -17,8 +17,8 @@ const CreateJotRequestSchema = z.object({
           message:
             "Invalid file extension. Please provide a valid file extension",
           path: ["filename"],
-        }
-      )
+        },
+      ),
   ),
   description: z.string().nullable(),
 });
@@ -46,7 +46,7 @@ const GetAllJotsResponseSchema = z.object({
         id: z.string(),
         totalFiles: z.number().int().nonnegative(),
       }),
-    })
+    }),
   ),
 
   pagination: z.object({

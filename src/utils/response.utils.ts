@@ -1,6 +1,4 @@
 import { Response } from "express";
-import { ZodError } from "zod";
-import { ApiError } from "../errors/api/error";
 
 interface ApiSucessResponse<T> {
   success: boolean;
@@ -47,9 +45,9 @@ function createApiErrorResponse(
   };
 }
 
-function sendApiResponse(
+function sendApiResponse<T>(
   res: Response,
-  response: ApiSucessResponse<any> | ApiErrorResponse,
+  response: ApiSucessResponse<T> | ApiErrorResponse,
 ) {
   return res.status(response.statusCode).json(response);
 }

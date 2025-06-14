@@ -1,12 +1,11 @@
 import { UserDB } from "../../db/user.db";
 import bcrypt from "bcrypt";
-import {
-  IAuthLoginDTO,
-  IAuthUserDTO,
-} from "./auth.types";
+import { AccessTokenPayloadType, IAuthLoginDTO, IAuthUserDTO } from "./auth.types";
 import jwt from "jsonwebtoken";
 import { AuthSignupRequestType } from "../../zod/auth/signup.z";
-import { AccessTokenPayloadType, AuthLoginRequestType } from "../../zod/auth/login.z";
+import {
+  AuthLoginRequestType,
+} from "../../zod/auth/login.z";
 import { BadRequestError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import { envData } from "../../env";
@@ -21,7 +20,9 @@ export class AuthService {
     this.userDB = new UserDB();
   }
   async signup(signupData: AuthSignupRequestType): Promise<IAuthUserDTO> {
-    const existingUser = await this.userDB.findOneUserByUsername(signupData.username);
+    const existingUser = await this.userDB.findOneUserByUsername(
+      signupData.username,
+    );
     if (existingUser) {
       throw new BadRequestError("Username already exists");
     }
@@ -31,10 +32,7 @@ export class AuthService {
       envData.SALT_ROUNDS,
     );
     const user: IUser = await prismaErrorHandler<IUser>(() =>
-      this.userDB.createUser(
-        signupData.username,
-        hashedPassword,
-      ),
+      this.userDB.createUser(signupData.username, hashedPassword),
     );
 
     const mapperUser: IAuthUserDTO = this.mapper.mapToSignupUser(user);
