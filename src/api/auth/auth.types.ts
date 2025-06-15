@@ -5,7 +5,11 @@ interface IAuthLoginDTO {
   accessToken: string;
 }
 
+interface IAuthStatusResponseType {
+  status: boolean,
+  username: string | null
+}
+
 type AccessTokenPayloadType = { id: string };
 type IAuthUserDTO = Omit<IUser, "id" | "password">;
-type AuthStatusType = { status: boolean };
-export { IAuthUserDTO, IAuthLoginDTO, AccessTokenPayloadType, AuthStatusType };
+export { IAuthUserDTO, IAuthLoginDTO, AccessTokenPayloadType, IAuthStatusResponseType };

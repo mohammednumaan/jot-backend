@@ -6,7 +6,7 @@ import { AuthSignupRequestType } from "../../zod/auth/signup.z";
 import {
   AuthLoginRequestType,
 } from "../../zod/auth/login.z";
-import { BadRequestError } from "../../errors/api/error";
+import { BadRequestError, NotFoundError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import { envData } from "../../env";
 import { IUser } from "../user/user.types";
@@ -69,5 +69,21 @@ export class AuthService {
       expiresIn: "1d",
     });
     return accessToken;
+  }
+
+  async getAuthenticationStatus(userId: string){
+    console.log(userId);
+    
+    const user = await prismaErrorHandler(() => 
+      this.userDB.findOneUserById(userId)
+    );
+    console.log(user);
+    
+
+    if (!user){
+      throw new NotFoundError("User could not be found");
+    };
+
+    return { username: user.username}
   }
 }

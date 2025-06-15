@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { IAuthLoginDTO, IAuthUserDTO, AuthStatusType } from "./auth.types";
+import { IAuthLoginDTO, IAuthUserDTO, IAuthStatusResponseType } from "./auth.types";
 import validate from "../../zod/validate";
 
 import { UnauthorizedError, ValidationError } from "../../errors/api/error";
@@ -23,6 +23,7 @@ import {
 } from "../../zod/auth/login.z";
 import { envData } from "../../env";
 import verifyToken from "../../utils/verify_token.utils";
+import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 
 export default class AuthController {
   private readonly authService: AuthService;
@@ -126,16 +127,19 @@ export default class AuthController {
     if (!jwtCookie) {
       throw new UnauthorizedError("Unauthorized request");
     }
-
+    
     // this throws an error if the jwt verification fails, which is then
     // caught by the asyncErrorHandler that wraps around the route which uses
     // this function (authenticationStatus)
     verifyToken(req, jwtCookie);
-    const successResponse: ApiSucessResponse<AuthStatusType> = {
+    
+    const { username } = await this.authService.getAuthenticationStatus(req.user.id);
+    
+    const successResponse: ApiSucessResponse<IAuthStatusResponseType> = {
       success: true,
       message: "Authentication status retrived successfully",
       statusCode: 200,
-      data: { status: true },
+      data: { status: true, username },
     };
 
     return res.status(successResponse.statusCode).json(successResponse);
