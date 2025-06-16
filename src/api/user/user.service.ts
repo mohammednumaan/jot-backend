@@ -6,8 +6,10 @@ import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import {
   IJot,
   IJotGroup,
-  IJotGroupWithFileCount,
+  IJotGroupsWithCount,
+  IJotWithOwnerAndGroup,
 } from "../jot/jot.types";
+import { IUser } from "./user.types";
 
 export class userService {
   private readonly jotGroupDB: JotGroupDB;
@@ -41,39 +43,42 @@ export class userService {
   }
 
   async getJotGroups(username: string, offset: number, limit: number) {
-    const user = await prismaErrorHandler(() =>
+
+    // TODO: this code is exactly same as the on in jot.service.ts
+    // i need to refactor this to avoid code duplication
+    const user = await prismaErrorHandler<IUser | null>(() =>
       this.userDB.findOneUserByUsername(username),
     );
-
     if (!user) {
-      throw new NotFoundError("The requested user could not be found");
-    }
+      throw new NotFoundError("User not found");
+    };
 
-    const { jotGroups, count } = await prismaErrorHandler(() =>
-      this.jotGroupDB.getAllJotGroupsByUserId(user.id, offset, limit),
+    const { jotGroups, count } = await prismaErrorHandler<IJotGroupsWithCount>(
+      () => this.jotGroupDB.getAllJotGroupsByUserId(user.id, offset, limit),
     );
 
-    if (!count) {
-      return {
-        jotGroups: [],
-        count: 0,
-      };
-    }
-
-    const allJotGroups: IJotGroupWithFileCount[] = [];
+    const allJots: IJotWithOwnerAndGroup[] = [];
     for (const group of jotGroups) {
       const jots = await prismaErrorHandler<IJot[]>(() =>
         this.jotDB.getJotsByGroupId(group.id),
       );
 
-      const jotGroupWithFileCount: IJotGroupWithFileCount = {
-        ...group,
-        totalFiles: jots.length,
+      const jotWithAuthorAndGroup: IJotWithOwnerAndGroup = {
+        ...jots[0],
+        owner: {
+          id: user.id,
+          name: user.username,
+        },
+        jotGroup: {
+          id: group.id,
+          totalFiles: jots.length,
+          description: group.description
+        },
       };
 
-      allJotGroups.push(jotGroupWithFileCount);
+      allJots.push(jotWithAuthorAndGroup);
     }
 
-    return { jotGroups: allJotGroups, count };
+    return { jotGroups: allJots, count };
   }
 }

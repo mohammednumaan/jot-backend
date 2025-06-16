@@ -4,8 +4,6 @@ import validate from "../../zod/validate";
 import {
   GetAllJotGroupsByUserIdRequestSchema,
   GetAllJotGroupsByUserIdRequestType,
-  GetAllJotGroupsByUserIdResponseSchema,
-  GetAllJotGroupsByUserIdResponseType,
   GetJotGroupRequestSchema,
   GetJotGroupRequestType,
   GetJotGroupResponseSchema,
@@ -16,7 +14,10 @@ import {
   createApiSuccessResponse,
   sendApiResponse,
 } from "../../utils/response.utils";
-
+import {
+  GetAllJotResponseType,
+  GetAllJotsResponseSchema,
+} from "../../zod/jot/jot.z";
 
 export class UserController {
   private readonly userService: userService;
@@ -27,19 +28,19 @@ export class UserController {
   async getJotGroup(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<GetJotGroupRequestType>(
       GetJotGroupRequestSchema,
-      req.params as unknown as { name: string; jotGroupId: string },
+      req.params as unknown as { name: string; jotGroupId: string }
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten(),
+        validationResult.error.flatten()
       );
     }
 
     const jots = await this.userService.getJotGroupById(
-      validationResult.data.jotGroupId,
+      validationResult.data.jotGroupId
     );
 
     const responseData = {
@@ -47,21 +48,21 @@ export class UserController {
     };
     const responseValidation = validate<GetJotGroupResponseType>(
       GetJotGroupResponseSchema,
-      responseData,
+      responseData
     );
 
     if (!responseValidation.success) {
       throw new ValidationError(
         "Invalid response format",
         "VALIDATION_ERROR",
-        responseValidation.error.flatten(),
+        responseValidation.error.flatten()
       );
     }
 
     const successResponse = createApiSuccessResponse(
       "Jots for the jotGroup retrieved successfully",
       200,
-      responseValidation.data,
+      responseValidation.data
     );
 
     return sendApiResponse(res, successResponse);
@@ -74,14 +75,14 @@ export class UserController {
     };
     const validationResult = validate<GetAllJotGroupsByUserIdRequestType>(
       GetAllJotGroupsByUserIdRequestSchema,
-      params,
+      params
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten(),
+        validationResult.error.flatten()
       );
     }
 
@@ -92,7 +93,7 @@ export class UserController {
     const { jotGroups, count } = await this.userService.getJotGroups(
       validationResult.data.name,
       offset,
-      requestedLimit,
+      requestedLimit
     );
     const totalPages = Math.ceil(count / requestedLimit);
 
@@ -100,11 +101,11 @@ export class UserController {
       throw new ValidationError(
         "Invalid page number",
         "VALIDATION_ERROR",
-        `Page must be between 1 and ${totalPages}`,
+        `Page must be between 1 and ${totalPages}`
       );
     }
 
-    const responseData: GetAllJotGroupsByUserIdResponseType = {
+    const responseData: GetAllJotResponseType = {
       jots: jotGroups,
       pagination: {
         page: requestedPage,
@@ -113,25 +114,24 @@ export class UserController {
       },
     };
 
-    const responseValidation = validate<GetAllJotGroupsByUserIdResponseType>(
-      GetAllJotGroupsByUserIdResponseSchema,
-      responseData,
+    const responseValidation = validate<GetAllJotResponseType>(
+      GetAllJotsResponseSchema,
+      responseData
     );
 
     if (!responseValidation.success) {
       throw new ValidationError(
         "Invalid response format",
         "VALIDATION_ERROR",
-        responseValidation.error.flatten(),
+        responseValidation.error.flatten()
       );
     }
 
-    const successResponse =
-      createApiSuccessResponse<GetAllJotGroupsByUserIdResponseType>(
-        "Jots retrieved successfully",
-        200,
-        responseValidation.data,
-      );
+    const successResponse = createApiSuccessResponse<GetAllJotResponseType>(
+      "Jots retrieved successfully",
+      200,
+      responseValidation.data
+    );
 
     return sendApiResponse(res, successResponse);
   }
