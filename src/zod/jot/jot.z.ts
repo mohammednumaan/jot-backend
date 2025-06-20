@@ -17,8 +17,8 @@ const CreateJotRequestSchema = z.object({
           message:
             "Invalid file extension. Please provide a valid file extension",
           path: ["filename"],
-        },
-      ),
+        }
+      )
   ),
   description: z.string().nullable(),
 });
@@ -44,9 +44,9 @@ const GetAllJotsResponseSchema = z.object({
       jotGroup: z.object({
         id: z.string(),
         totalFiles: z.number().int().nonnegative(),
-        description: z.string().nullable()
+        description: z.string().nullable(),
       }),
-    }),
+    })
   ),
 
   pagination: z.object({
@@ -56,9 +56,34 @@ const GetAllJotsResponseSchema = z.object({
   }),
 });
 
+const UpdateJotRequestSchema = z.object({
+  jots: z.array(
+    z
+      .object({
+        id: z.string(),
+        name: z.string().trim().min(1, "Filename is required"),
+        content: z.string().trim().min(1, "File content is required"),
+      })
+      .refine(
+        (data) => {
+          const fileNameArr = data.name.split(".");
+          return validateFileExtension(fileNameArr[fileNameArr.length - 1]);
+        },
+        {
+          message:
+            "Invalid file extension. Please provide a valid file extension",
+          path: ["filename"],
+        }
+      )
+  ),
+  description: z.string().nullable(),
+});
+
 type CreateJotRequestType = z.infer<typeof CreateJotRequestSchema>;
 type GetAllJotsRequestType = z.infer<typeof GetAllJotsRequestSchema>;
 type GetAllJotResponseType = z.infer<typeof GetAllJotsResponseSchema>;
+
+type UpdateJotRequestType = z.infer<typeof UpdateJotRequestSchema>;
 
 export {
   CreateJotRequestSchema,
@@ -67,4 +92,6 @@ export {
   GetAllJotResponseType,
   GetAllJotsRequestSchema,
   GetAllJotsRequestType,
+  UpdateJotRequestSchema,
+  UpdateJotRequestType
 };

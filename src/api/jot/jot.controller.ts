@@ -8,6 +8,8 @@ import {
   CreateJotRequestSchema,
   CreateJotRequestType,
   GetAllJotsResponseSchema,
+  UpdateJotRequestType,
+  UpdateJotRequestSchema,
 } from "../../zod/jot/jot.z";
 import { ValidationError } from "../../errors/api/error";
 import {
@@ -24,37 +26,22 @@ export default class JotController {
   async create(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<CreateJotRequestType>(
       CreateJotRequestSchema,
-      req.body,
+      req.body
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten(),
+        validationResult.error.flatten()
       );
     }
     await this.jotService.create(validationResult.data, req.user.id);
-    // const responseData: JotResponseType = {
-    //   jot: createdJot,
-    // };
 
-    // const responseValidation = validate<JotResponseType>(
-    //   JotResponseSchema,
-    //   responseData
-    // );
-
-    // if (!responseValidation.success) {
-    //   throw new ValidationError(
-    //     "Invalid response format",
-    //     "VALIDATION_ERROR",
-    //     responseValidation.error.flatten()
-    //   );
-    // }
     const successResponse = createApiSuccessResponse(
       "Jot created successfully",
       201,
-      null,
+      null
     );
 
     return sendApiResponse(res, successResponse);
@@ -63,14 +50,14 @@ export default class JotController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     const validationResult = validate<GetAllJotsRequestType>(
       GetAllJotsRequestSchema,
-      req.params as unknown as { page: number },
+      req.params as unknown as { page: number }
     );
 
     if (!validationResult.success) {
       throw new ValidationError(
         "Invalid request body",
         "VALIDATION_ERROR",
-        validationResult.error.flatten(),
+        validationResult.error.flatten()
       );
     }
 
@@ -80,7 +67,7 @@ export default class JotController {
 
     const { jotGroups, count } = await this.jotService.getAll(
       offset,
-      requestedLimit,
+      requestedLimit
     );
     const totalPages = Math.ceil(count / requestedLimit);
 
@@ -88,7 +75,7 @@ export default class JotController {
       throw new ValidationError(
         "Invalid page number",
         "VALIDATION_ERROR",
-        `Page must be between 1 and ${totalPages}`,
+        `Page must be between 1 and ${totalPages}`
       );
     }
 
@@ -103,21 +90,44 @@ export default class JotController {
 
     const responseValidation = validate<GetAllJotResponseType>(
       GetAllJotsResponseSchema,
-      responseData,
+      responseData
     );
 
     if (!responseValidation.success) {
       throw new ValidationError(
         "Invalid response format",
         "VALIDATION_ERROR",
-        responseValidation.error.flatten(),
+        responseValidation.error.flatten()
       );
     }
 
     const successResponse = createApiSuccessResponse<GetAllJotResponseType>(
       "Jot retrieved successfully",
       200,
-      responseValidation.data,
+      responseValidation.data
+    );
+
+    return sendApiResponse(res, successResponse);
+  }
+
+  async edit(req: Request, res: Response, next: NextFunction) {
+    const validationResult = validate<UpdateJotRequestType>(
+      UpdateJotRequestSchema,
+      req.body
+    );
+
+    if (!validationResult.success) {
+      throw new ValidationError(
+        "Invalid request body",
+        "VALIDATION_ERROR",
+        validationResult.error.flatten()
+      );
+    }
+    await this.jotService.edit(validationResult.data, req.params.jotGroupId);
+    const successResponse = createApiSuccessResponse(
+      "Jot updated successfully",
+      200,
+      null
     );
 
     return sendApiResponse(res, successResponse);

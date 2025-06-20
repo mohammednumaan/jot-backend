@@ -39,7 +39,7 @@ export class userService {
       throw new NotFoundError("Jot's for the Jot group could not be found");
     }
 
-    return jots;
+    return {jots, description: jotGroup.description};
   }
 
   async getJotGroups(username: string, offset: number, limit: number) {

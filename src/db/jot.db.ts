@@ -6,7 +6,7 @@ export class JotDB {
     name: string,
     extension: string,
     content: string,
-    jotGroupId: string,
+    jotGroupId: string
   ): Promise<IJot> {
     const createdAt = new Date();
     const newJot = await prisma.jot.create({
@@ -32,6 +32,25 @@ export class JotDB {
       },
     });
     return jots;
+  }
+
+  async updateJot(
+    jotId: string,
+    name: string,
+    extension: string,
+    content: string
+  ) {
+    const updatedJot = await prisma.jot.update({
+      where: { id: jotId },
+      data: {
+        name: name,
+        extension: extension,
+        content: content,
+        updatedAt: new Date(),
+      },
+    });
+
+    return updatedJot;
   }
 
   async getAllJotsCount(): Promise<number> {

@@ -39,12 +39,13 @@ export class UserController {
       );
     }
 
-    const jots = await this.userService.getJotGroupById(
+    const { jots, description } = await this.userService.getJotGroupById(
       validationResult.data.jotGroupId
     );
 
     const responseData = {
       jots: jots,
+      description: description
     };
     const responseValidation = validate<GetJotGroupResponseType>(
       GetJotGroupResponseSchema,

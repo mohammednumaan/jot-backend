@@ -28,6 +28,18 @@ export class JotGroupDB {
     return newJotGroup;
   }
 
+  async updateJotGroup(jotGroupId: string, description: string | null) {
+    const updatedJotGroup = await prisma.jotGroup.update({
+      where: { id: jotGroupId },
+      data: {
+        description: description,
+        updatedAt: new Date(),
+      },
+    });
+
+    return updatedJotGroup;
+  }
+
   async getAllJotGroups(offset: number, limit: number) {
     const jotGroups = await prisma.jotGroup.findMany({
       skip: offset,
