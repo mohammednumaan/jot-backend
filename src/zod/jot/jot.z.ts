@@ -82,7 +82,6 @@ const UpdateJotRequestSchema = z.object({
 type CreateJotRequestType = z.infer<typeof CreateJotRequestSchema>;
 type GetAllJotsRequestType = z.infer<typeof GetAllJotsRequestSchema>;
 type GetAllJotResponseType = z.infer<typeof GetAllJotsResponseSchema>;
-
 type UpdateJotRequestType = z.infer<typeof UpdateJotRequestSchema>;
 
 export {

@@ -1,8 +1,10 @@
 import { JotDB } from "../../db/jot.db";
 import { JotGroupDB } from "../../db/jot_group.db";
+import prisma from "../../db/prisma";
 import { UserDB } from "../../db/user.db";
 import { NotFoundError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
+import parseFilename from "../../utils/parse_filename";
 import {
   CreateJotRequestType,
   UpdateJotRequestType,
@@ -12,6 +14,7 @@ import {
   IJot,
   IJotGroup,
   IJotGroupsWithCount,
+  IJotWithoutId,
   IJotWithOwnerAndGroup,
 } from "./jot.types";
 
@@ -31,14 +34,20 @@ export class JotService {
       this.jotGroupDB.createJotGroup(userId, jotData.description)
     );
 
-    for (const jots of jotData.jots) {
-      const jotNameArr = jots.name.split(".");
-      const jotExtension = jotNameArr[jotNameArr.length - 1];
-      const jotName = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
-      await prismaErrorHandler<IJot>(() =>
-        this.jotDB.createJot(jotName, jotExtension, jots.content, jotGroup.id)
-      );
-    }
+    const mappedJots: IJotWithoutId[] = jotData.jots.map((jot) => {
+      const nowDate = new Date();
+      const { fileName, fileExtension } = parseFilename(jot.name);
+      return {
+        name: fileName,
+        extension: fileExtension,
+        content: jot.content,
+        jotGroupId: jotGroup.id,
+        createdAt: nowDate,
+        updatedAt: nowDate,
+      };
+    });
+
+    await this.jotDB.createManyJots(mappedJots);
   }
 
   async edit(jotData: UpdateJotRequestType, jotGroupId: string) {
@@ -60,41 +69,77 @@ export class JotService {
       this.jotDB.getJotsByGroupId(jotGroupId)
     );
 
-    const ids = jots.map((jot) => jot.id);
-    const existingJots = jotData.jots.filter((jot) => ids.includes(jot.id));
-    const newJots = jotData.jots.filter((jot) => !ids.includes(jot.id));
+    const recievedJotIds = jots.map((jot) => jot.id);
+    const existingJots = jotData.jots.filter((jot) =>
+      recievedJotIds.includes(jot.id)
+    );
+    const newJots = jotData.jots.filter(
+      (jot) => !recievedJotIds.includes(jot.id)
+    );
 
-    // if the description is **not** the same, we update the jotGroup
-    if (jotData.description !== jotGroup.description) {
-      await prismaErrorHandler(() =>
-        this.jotGroupDB.updateJotGroup(jotGroupId, jotData.description)
-      );
-    }
+    /* 
+      here, im performing multiple operations: 
+        1. write to jotGroup table
+        2. write to jot table (2x)
+      
+      so, if any one operation fails, i need to rollback
+      for eg: updating description failed but updating content was a success
+      so, this causes a inconsistent state because the user updated the jot but only content was changed
+      not the description.
+      
+      to solve this, i need to use transactions.
+    */
 
-    // here, i loop through the entire array of jots we recieved
-    // and update each jot that **exists** in the database, this is a
-    // very inefficient way of doing things, but it works for now
-    for (const file of existingJots) {
-      const jotNameArr = file.name.split(".");
-      const extension = jotNameArr[jotNameArr.length - 1];
-      const name = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
+    await prisma.$transaction(async (tx) => {
+      if (jotData.description !== jotGroup.description) {
+        await prismaErrorHandler(() =>
+          tx.jotGroup.update({
+            where: {
+              id: jotGroupId,
+            },
+            data: {
+              description: jotData.description,
+            },
+          })
+        );
+      }
 
-      await prismaErrorHandler(() =>
-        this.jotDB.updateJot(file.id, name, extension, file.content)
-      );
-    }
+      // here, i loop through the entire array of jots we recieved
+      // and update each jot that **exists** in the database, this is a
+      // very inefficient way of doing things, but it works for now
+      for (const jot of existingJots) {
+        const { fileName, fileExtension } = parseFilename(jot.name);
+        await prismaErrorHandler(() =>
+          tx.jot.update({
+            where: {
+              id: jot.id,
+            },
+            data: {
+              name: fileName,
+              extension: fileExtension,
+              content: jot.content,
+            },
+          })
+        );
+      }
 
-    // similarly, i create new jots for newly added files
-    // for the same jotGroup, this is a very inefficient way of doing things
-    // but it works for now
-    for (const newJot of newJots) {
-      const jotNameArr = newJot.name.split(".");
-      const extension = jotNameArr[jotNameArr.length - 1];
-      const name = jotNameArr.slice(0, jotNameArr.length - 1).join(".");
-      await prismaErrorHandler(() =>
-        this.jotDB.createJot(name, extension, newJot.content, jotGroupId)
-      );
-    }
+      // here, i create new jots for newly added files. this is a batch insert
+      // which improves performance significantly
+      const mappedJots: IJotWithoutId[] = newJots.map((jot) => {
+        const nowDate = new Date();
+        const { fileName, fileExtension } = parseFilename(jot.name);
+        return {
+          name: fileName,
+          extension: fileExtension,
+          content: jot.content,
+          jotGroupId,
+          createdAt: nowDate,
+          updatedAt: nowDate,
+        };
+      });
+
+      await tx.jot.createMany({ data: mappedJots });
+    });
   }
 
   async getAll(offset: number, limit: number) {

@@ -1,4 +1,4 @@
-import { IJot } from "../api/jot/jot.types";
+import { IJot, IJotWithoutId } from "../api/jot/jot.types";
 import prisma from "./prisma";
 
 export class JotDB {
@@ -21,6 +21,14 @@ export class JotDB {
     });
 
     return newJot;
+  }
+
+  async createManyJots(jots: IJotWithoutId[]) {
+    const createdJots = await prisma.jot.createMany({
+      data: jots,
+    });
+
+    return createdJots;
   }
 
   async getAllJots(offset: number, limit: number): Promise<IJot[]> {

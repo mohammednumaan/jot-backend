@@ -35,4 +35,5 @@ interface IJotGroupsWithCount {
 }
 
 type IJotDTO = Omit<IJot, "id" | "jotGroupId">;
-export { IJot, IJotGroup, IJotWithOwnerAndGroup, IJotDTO, IJotGroupsWithCount };
+type IJotWithoutId = Omit<IJot, "id">
+export { IJot, IJotGroup, IJotWithOwnerAndGroup, IJotDTO, IJotGroupsWithCount, IJotWithoutId };
