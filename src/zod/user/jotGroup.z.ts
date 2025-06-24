@@ -16,7 +16,14 @@ const GetJotGroupResponseSchema = z.object({
       updatedAt: z.date(),
     })
   ),
-  description: z.string().nullable()
+  owner: z.object({
+    id: z.string(),
+    name: z.string().nonempty(),
+  }),
+  jotGroup: z.object({
+    id: z.string(),
+    description: z.string().nullable(),
+  }),
 });
 
 const GetAllJotGroupsByUserIdRequestSchema = z.object({

@@ -16,8 +16,7 @@ interface IJotGroup {
   updatedAt: Date;
 }
 
-interface IJotWithOwnerAndGroup
-  extends Omit<IJot, "jotGroupId" | "description"> {
+interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId">{
   owner: {
     id: string;
     name: string;
@@ -26,6 +25,8 @@ interface IJotWithOwnerAndGroup
     id: string;
     totalFiles: number;
     description: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   };
 }
 
@@ -35,5 +36,12 @@ interface IJotGroupsWithCount {
 }
 
 type IJotDTO = Omit<IJot, "id" | "jotGroupId">;
-type IJotWithoutId = Omit<IJot, "id">
-export { IJot, IJotGroup, IJotWithOwnerAndGroup, IJotDTO, IJotGroupsWithCount, IJotWithoutId };
+type IJotWithoutId = Omit<IJot, "id">;
+export {
+  IJot,
+  IJotGroup,
+  IJotWithOwnerAndGroup,
+  IJotDTO,
+  IJotGroupsWithCount,
+  IJotWithoutId,
+};

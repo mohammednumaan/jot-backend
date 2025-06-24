@@ -38,18 +38,16 @@ export class UserController {
         validationResult.error.flatten()
       );
     }
+    console.log(req.user);
 
-    const { jots, description } = await this.userService.getJotGroupById(
-      validationResult.data.jotGroupId
+    const jots = await this.userService.getJotGroupById(
+      validationResult.data.jotGroupId,
+      req.user.id
     );
 
-    const responseData = {
-      jots: jots,
-      description: description
-    };
     const responseValidation = validate<GetJotGroupResponseType>(
       GetJotGroupResponseSchema,
-      responseData
+      jots
     );
 
     if (!responseValidation.success) {

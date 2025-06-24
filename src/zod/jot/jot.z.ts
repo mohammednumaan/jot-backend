@@ -45,6 +45,8 @@ const GetAllJotsResponseSchema = z.object({
         id: z.string(),
         totalFiles: z.number().int().nonnegative(),
         description: z.string().nullable(),
+        createdAt: z.date(),
+        updatedAt: z.date(),
       }),
     })
   ),
@@ -92,5 +94,5 @@ export {
   GetAllJotsRequestSchema,
   GetAllJotsRequestType,
   UpdateJotRequestSchema,
-  UpdateJotRequestType
+  UpdateJotRequestType,
 };
