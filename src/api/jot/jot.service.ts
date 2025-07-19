@@ -1,7 +1,5 @@
-import { JotDB } from "../../db/jot.db";
-import { JotGroupDB } from "../../db/jot_group.db";
+import { Databases } from "../../db/index.db";
 import prisma from "../../db/prisma";
-import { UserDB } from "../../db/user.db";
 import { NotFoundError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import parseFilename from "../../utils/parse_filename";
@@ -10,28 +8,29 @@ import {
   UpdateJotRequestType,
 } from "../../zod/jot/jot.z";
 import { IUser } from "../user/user.types";
+import JotMapper from "./jot.mapper";
 import {
   IJot,
   IJotGroup,
-  IJotGroupsWithCount,
   IJotWithoutId,
   IJotWithOwnerAndGroup,
 } from "./jot.types";
 
 export class JotService {
-  private readonly jotDB: JotDB;
-  private readonly jotGroupDB: JotGroupDB;
-  private readonly userDB: UserDB;
+  private readonly databases: Databases;
+  private readonly mapper: JotMapper;
 
   constructor() {
-    this.jotDB = new JotDB();
-    this.jotGroupDB = new JotGroupDB();
-    this.userDB = new UserDB();
+    this.databases = new Databases();
+    this.mapper = new JotMapper();
   }
 
   async create(jotData: CreateJotRequestType, userId: string) {
     const jotGroup: IJotGroup = await prismaErrorHandler<IJotGroup>(() =>
-      this.jotGroupDB.createJotGroup(userId, jotData.description)
+      this.databases.jotGroups.create({
+        userId,
+        description: jotData.description,
+      })
     );
 
     const mappedJots: IJotWithoutId[] = jotData.jots.map((jot) => {
@@ -47,10 +46,10 @@ export class JotService {
       };
     });
 
-    await this.jotDB.createManyJots(mappedJots);
+    await this.databases.jots.createMany(mappedJots);
   }
 
-  async edit(jotData: UpdateJotRequestType, jotGroupId: string) {
+  async update(jotData: UpdateJotRequestType, jotGroupId: string) {
     // this function recieved the a list of jots with theid name and content
     // along with the description of the jotGroup
 
@@ -59,14 +58,14 @@ export class JotService {
     // still need to improve this code, but it works for now
 
     const jotGroup = await prismaErrorHandler<IJotGroup | null>(() =>
-      this.jotGroupDB.findOneJotGroup(jotGroupId)
+      this.databases.jotGroups.findOne(jotGroupId)
     );
     if (!jotGroup) {
       throw new NotFoundError("Jot was not found");
     }
 
     const jots = await prismaErrorHandler<IJot[]>(() =>
-      this.jotDB.getJotsByGroupId(jotGroupId)
+      this.databases.jots.findByGroupId(jotGroupId)
     );
 
     const recievedJotIds = jots.map((jot) => jot.id);
@@ -142,36 +141,49 @@ export class JotService {
     });
   }
 
-  async getAll(offset: number, limit: number) {
-    const { jotGroups, count } = await prismaErrorHandler<IJotGroupsWithCount>(
-      () => this.jotGroupDB.getAllJotGroups(offset, limit)
+  async delete(jotGroupId: string) {
+    const jotGroup = await prismaErrorHandler(() =>
+      this.databases.jotGroups.findOne(jotGroupId)
+    );
+
+    if (!jotGroup) {
+      throw new NotFoundError("Jot not found");
+    }
+
+    await prismaErrorHandler(() => this.databases.jotGroups.delete(jotGroupId));
+  }
+
+  async getAll(offset: number, limit: number, userId: string) {
+    const user = await prismaErrorHandler<IUser | null>(() =>
+      this.databases.user.findOne(userId)
+    );
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const jotGroups = await prismaErrorHandler(() =>
+      this.databases.jotGroups.findAll(offset, limit)
+    );
+
+    const count = await prismaErrorHandler(() =>
+      this.databases.jotGroups.count()
     );
 
     const allJots: IJotWithOwnerAndGroup[] = [];
     for (const group of jotGroups) {
       const jots = await prismaErrorHandler<IJot[]>(() =>
-        this.jotDB.getJotsByGroupId(group.id)
+        this.databases.jots.findByGroupId(group.id)
       );
 
       const jotOwner = await prismaErrorHandler<IUser | null>(() =>
-        this.userDB.findOneUserById(group.userId)
+        this.databases.user.findOne(group.userId)
       );
 
       if (!jotOwner) {
         throw new Error("A Jot's owner was not found.");
       }
-      const jotWithAuthorAndGroup: IJotWithOwnerAndGroup = {
-        ...jots[0],
-        owner: {
-          id: jotOwner.id,
-          name: jotOwner.username,
-        },
-        jotGroup: {
-          id: group.id,
-          totalFiles: jots.length,
-          description: group.description,
-        },
-      };
+      const jotWithAuthorAndGroup: IJotWithOwnerAndGroup =
+        this.mapper.mapToSingleJotWithOwner(jots[0], user, group, jots.length);
 
       allJots.push(jotWithAuthorAndGroup);
     }

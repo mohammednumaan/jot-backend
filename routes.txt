@@ -1,0 +1,9 @@
+API ROUTES:
+
+get all jots (latest)
+/jots
+
+create a jot
+/users/jot
+
+delete a jot

@@ -1,4 +1,5 @@
 import { Prisma } from "../../../generated/prisma";
+import { envData } from "../../env";
 import { ValidationError } from "../api/error";
 
 export async function prismaErrorHandler<QueryReturnType>(
@@ -9,8 +10,15 @@ export async function prismaErrorHandler<QueryReturnType>(
     return queryResult;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientValidationError) {
-      throw new ValidationError("Database validation failed. Invalid query structure.")
+      throw new ValidationError(
+        "Database validation failed. Invalid query structure."
+      );
     }
-    throw new Error("Something went wrong!");
+
+    if (envData.NODE_ENV === "development") {
+      throw new Error(error as string);
+    } else {
+      throw new Error("Something went wrong!");
+    }
   }
 }

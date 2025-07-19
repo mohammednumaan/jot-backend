@@ -1,27 +1,16 @@
-import { JotDB } from "../../db/jot.db";
-import { JotGroupDB } from "../../db/jot_group.db";
-import { UserDB } from "../../db/user.db";
+import { Databases } from "../../db/index.db";
 import { NotFoundError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import JotMapper from "../jot/jot.mapper";
-import {
-  IJot,
-  IJotGroup,
-  IJotGroupsWithCount,
-  IJotWithOwnerAndGroup,
-} from "../jot/jot.types";
-import { IUser } from "./user.types";
+import { IJot, IJotGroup, IJotWithOwnerAndGroup } from "../jot/jot.types";
+import { IUser, IUserNew } from "./user.types";
 
 export class userService {
-  private readonly jotGroupDB: JotGroupDB;
-  private readonly jotDB: JotDB;
-  private readonly userDB: UserDB;
+  private readonly databases: Databases;
   private readonly mapper: JotMapper;
 
   constructor() {
-    this.jotDB = new JotDB();
-    this.jotGroupDB = new JotGroupDB();
-    this.userDB = new UserDB();
+    this.databases = new Databases();
     this.mapper = new JotMapper();
   }
 
@@ -29,7 +18,7 @@ export class userService {
     console.log("user id", userId);
 
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.userDB.findOneUserById(userId)
+      this.databases.user.findOne(userId)
     );
 
     if (!user) {
@@ -38,7 +27,7 @@ export class userService {
     console.log("made it here", user);
 
     const jotGroup = await prismaErrorHandler<IJotGroup | null>(() =>
-      this.jotGroupDB.findOneJotGroup(jotGroupId)
+      this.databases.jotGroups.findOne(jotGroupId)
     );
 
     if (!jotGroup) {
@@ -46,7 +35,7 @@ export class userService {
     }
 
     const jots = await prismaErrorHandler<IJot[]>(() =>
-      this.jotDB.getJotsByGroupId(jotGroupId)
+      this.databases.jots.findByGroupId(jotGroupId)
     );
 
     if (!jots.length) {
@@ -60,20 +49,20 @@ export class userService {
     // TODO: this code is exactly same as the on in jot.service.ts
     // i need to refactor this to avoid code duplication
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.userDB.findOneUserByUsername(username)
+      this.databases.user.findOneByUsername(username)
     );
     if (!user) {
       throw new NotFoundError("User not found");
     }
 
-    const { jotGroups, count } = await prismaErrorHandler<IJotGroupsWithCount>(
-      () => this.jotGroupDB.getAllJotGroupsByUserId(user.id, offset, limit)
+    const jotGroups = await prismaErrorHandler(() =>
+      this.databases.jotGroups.findAllByUserId(user.id, offset, limit)
     );
 
     const allJots: IJotWithOwnerAndGroup[] = [];
     for (const group of jotGroups) {
       const jots = await prismaErrorHandler<IJot[]>(() =>
-        this.jotDB.getJotsByGroupId(group.id)
+        this.databases.jots.findByGroupId(group.id)
       );
 
       const jotWithAuthorAndGroup: IJotWithOwnerAndGroup =
@@ -82,6 +71,6 @@ export class userService {
       allJots.push(jotWithAuthorAndGroup);
     }
 
-    return { jotGroups: allJots, count };
+    return { jotGroups: allJots, count: jotGroups.length };
   }
 }

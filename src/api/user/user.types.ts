@@ -5,3 +5,5 @@ export interface IUser {
   avatar: string;
   joinedAt: Date;
 }
+
+export type IUserNew = Omit<IUser, "id" | "joinedAt">;

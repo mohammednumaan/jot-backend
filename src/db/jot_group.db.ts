@@ -1,8 +1,9 @@
-import { IJotGroup } from "../api/jot/jot.types";
+import { IJotGroup, IJotGroupNew } from "../api/jot/jot.types";
 import prisma from "./prisma";
+import { IJotGroupDatabase } from "./types";
 
-export class JotGroupDB {
-  async findOneJotGroup(jotGroupId: string) {
+export class JotGroupDatabase implements IJotGroupDatabase {
+  async findOne(jotGroupId: string) {
     const jotGroup = await prisma.jotGroup.findFirst({
       where: {
         id: jotGroupId,
@@ -12,14 +13,40 @@ export class JotGroupDB {
     return jotGroup;
   }
 
-  async createJotGroup(
-    userId: string,
-    description: string | null
-  ): Promise<IJotGroup> {
+  async findAll(offset: number, limit: number) {
+    const jotGroups = await prisma.jotGroup.findMany({
+      skip: offset,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return jotGroups;
+  }
+
+  async findAllByUserId(
+    id: string,
+    offset: number,
+    limit: number
+  ): Promise<IJotGroup[]> {
+    const jotGroups = await prisma.jotGroup.findMany({
+      skip: offset,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      where: {
+        userId: id,
+      },
+    });
+    return jotGroups;
+  }
+
+  async create(inputs: IJotGroupNew): Promise<IJotGroup> {
     const newJotGroup = await prisma.jotGroup.create({
       data: {
-        user: { connect: { id: userId } },
-        description: description,
+        user: { connect: { id: inputs.userId } },
+        description: inputs.description || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -28,11 +55,11 @@ export class JotGroupDB {
     return newJotGroup;
   }
 
-  async updateJotGroup(jotGroupId: string, description: string | null) {
+  async update(jotGroupId: string, inputs: IJotGroupNew): Promise<IJotGroup> {
     const updatedJotGroup = await prisma.jotGroup.update({
       where: { id: jotGroupId },
       data: {
-        description: description,
+        description: inputs.description || null,
         updatedAt: new Date(),
       },
     });
@@ -40,28 +67,14 @@ export class JotGroupDB {
     return updatedJotGroup;
   }
 
-  async getAllJotGroups(offset: number, limit: number) {
-    const jotGroups = await prisma.jotGroup.findMany({
-      skip: offset,
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
+  async delete(id: string) {
+    await prisma.jotGroup.delete({
+      where: { id: id },
     });
-    return { jotGroups, count: jotGroups.length };
   }
 
-  async getAllJotGroupsByUserId(userId: string, offset: number, limit: number) {
-    const jotGroups = await prisma.jotGroup.findMany({
-      skip: offset,
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-      where: {
-        userId: userId,
-      },
-    });
-    return { jotGroups, count: jotGroups.length };
+  async count() {
+    const jotGroupCount = await prisma.jotGroup.count();
+    return jotGroupCount;
   }
 }

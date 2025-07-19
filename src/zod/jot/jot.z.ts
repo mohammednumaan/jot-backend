@@ -81,10 +81,15 @@ const UpdateJotRequestSchema = z.object({
   description: z.string().nullable(),
 });
 
+const DeleteJotRequestSchema = z.object({
+  jotGroupId: z.string(),
+});
+
 type CreateJotRequestType = z.infer<typeof CreateJotRequestSchema>;
 type GetAllJotsRequestType = z.infer<typeof GetAllJotsRequestSchema>;
 type GetAllJotResponseType = z.infer<typeof GetAllJotsResponseSchema>;
 type UpdateJotRequestType = z.infer<typeof UpdateJotRequestSchema>;
+type DeleteJotRequestType = z.infer<typeof DeleteJotRequestSchema>;
 
 export {
   CreateJotRequestSchema,
@@ -95,4 +100,6 @@ export {
   GetAllJotsRequestType,
   UpdateJotRequestSchema,
   UpdateJotRequestType,
+  DeleteJotRequestSchema,
+  DeleteJotRequestType,
 };

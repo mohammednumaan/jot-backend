@@ -1,27 +1,29 @@
-import { UserDB } from "../../db/user.db";
 import bcrypt from "bcrypt";
-import { AccessTokenPayloadType, IAuthLoginDTO, IAuthUserDTO } from "./auth.types";
+import {
+  AccessTokenPayloadType,
+  IAuthLoginDTO,
+  IAuthUserDTO,
+} from "./auth.types";
 import jwt from "jsonwebtoken";
 import { AuthSignupRequestType } from "../../zod/auth/signup.z";
-import {
-  AuthLoginRequestType,
-} from "../../zod/auth/login.z";
+import { AuthLoginRequestType } from "../../zod/auth/login.z";
 import { BadRequestError, NotFoundError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import { envData } from "../../env";
 import { IUser } from "../user/user.types";
 import { AuthMapper } from "./auth.mapper";
+import { Databases } from "../../db/index.db";
 
 export class AuthService {
-  private readonly userDB: UserDB;
+  private readonly databases: Databases;
   private readonly mapper: AuthMapper;
   constructor() {
     this.mapper = new AuthMapper();
-    this.userDB = new UserDB();
+    this.databases = new Databases();
   }
   async signup(signupData: AuthSignupRequestType): Promise<IAuthUserDTO> {
-    const existingUser = await this.userDB.findOneUserByUsername(
-      signupData.username,
+    const existingUser = await this.databases.user.findOneByUsername(
+      signupData.username
     );
     if (existingUser) {
       throw new BadRequestError("Username already exists");
@@ -29,10 +31,15 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(
       signupData.password,
-      envData.SALT_ROUNDS,
+      envData.SALT_ROUNDS
     );
-    const user: IUser = await prismaErrorHandler<IUser>(() =>
-      this.userDB.createUser(signupData.username, hashedPassword),
+
+    const user = await prismaErrorHandler<IUser>(() =>
+      this.databases.user.create({
+        username: signupData.username,
+        password: hashedPassword,
+        avatar: ""
+      })
     );
 
     const mapperUser: IAuthUserDTO = this.mapper.mapToSignupUser(user);
@@ -41,7 +48,7 @@ export class AuthService {
 
   async login(loginData: AuthLoginRequestType): Promise<IAuthLoginDTO> {
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.userDB.findOneUserByUsername(loginData.username),
+      this.databases.user.findOneByUsername(loginData.username)
     );
 
     if (!user) {
@@ -50,7 +57,7 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(
       loginData.password,
-      user.password,
+      user.password
     );
     if (!isPasswordValid) {
       throw new BadRequestError("Invalid username or password");
@@ -71,19 +78,18 @@ export class AuthService {
     return accessToken;
   }
 
-  async getAuthenticationStatus(userId: string){
+  async getAuthenticationStatus(userId: string) {
     console.log(userId);
-    
-    const user = await prismaErrorHandler(() => 
-      this.userDB.findOneUserById(userId)
+
+    const user = await prismaErrorHandler(() =>
+      this.databases.user.findOne(userId)
     );
     console.log(user);
-    
 
-    if (!user){
+    if (!user) {
       throw new NotFoundError("User could not be found");
-    };
+    }
 
-    return { username: user.username}
+    return { username: user.username };
   }
 }

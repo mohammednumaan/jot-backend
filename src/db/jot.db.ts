@@ -1,59 +1,61 @@
-import { IJot, IJotWithoutId } from "../api/jot/jot.types";
+import { IJot, IJotNew, IJotWithoutId } from "../api/jot/jot.types";
 import prisma from "./prisma";
+import { IJotDatabase } from "./types";
 
-export class JotDB {
-  async createJot(
-    name: string,
-    extension: string,
-    content: string,
-    jotGroupId: string
-  ): Promise<IJot> {
-    const createdAt = new Date();
-    const newJot = await prisma.jot.create({
-      data: {
-        name,
-        extension,
-        content,
-        createdAt: createdAt,
-        updatedAt: createdAt,
-        jotGroup: { connect: { id: jotGroupId } },
+export class JotDatabase implements IJotDatabase {
+  async findOne(id: string): Promise<IJot | null> {
+    return await prisma.jot.findUnique({
+      where: {
+        id: id,
       },
     });
-
-    return newJot;
   }
 
-  async createManyJots(jots: IJotWithoutId[]) {
-    const createdJots = await prisma.jot.createMany({
-      data: jots,
-    });
-
-    return createdJots;
-  }
-
-  async getAllJots(offset: number, limit: number): Promise<IJot[]> {
+  async findAll(offset: number, limit: number): Promise<IJot[]> {
     const jots = await prisma.jot.findMany({
       skip: offset,
       take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
     });
+
     return jots;
   }
 
-  async updateJot(
-    jotId: string,
-    name: string,
-    extension: string,
-    content: string
-  ) {
-    const updatedJot = await prisma.jot.update({
-      where: { id: jotId },
+  async findByGroupId(groupId: string): Promise<IJot[]> {
+    const jots = await prisma.jot.findMany({
+      where: {
+        jotGroupId: groupId,
+      },
+    });
+
+    return jots;
+  }
+
+  async create(inputs: IJotNew) {
+    const jot = await prisma.jot.create({
       data: {
-        name: name,
-        extension: extension,
-        content: content,
+        name: inputs.name,
+        extension: inputs.extension,
+        content: inputs.content,
+        jotGroupId: inputs.jotGroupId,
+      },
+    });
+
+    return jot;
+  }
+
+  async createMany(inputs: IJotNew[]) {
+    await prisma.jot.createMany({
+      data: inputs,
+    });
+  }
+
+  async update(id: string, inputs: IJotNew): Promise<IJot> {
+    const updatedJot = await prisma.jot.update({
+      where: { id: id },
+      data: {
+        name: inputs.name,
+        extension: inputs.extension,
+        content: inputs.content,
         updatedAt: new Date(),
       },
     });
@@ -61,31 +63,14 @@ export class JotDB {
     return updatedJot;
   }
 
-  async getAllJotsCount(): Promise<number> {
-    const count = await prisma.jot.count();
-    return count;
-  }
-
-  async getJotById(jotId: string): Promise<IJot | null> {
-    const jot = await prisma.jot.findFirst({
+  async delete(id: string): Promise<void> {
+    await prisma.jot.delete({
       where: {
-        id: jotId,
+        id: id,
       },
     });
-
-    return jot;
   }
-
-  async getJotsByGroupId(jotGroupId: string) {
-    const jots = await prisma.jot.findMany({
-      where: {
-        jotGroupId: jotGroupId,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
-
-    return jots;
+  async count(): Promise<number> {
+    return await prisma.jot.count();
   }
 }

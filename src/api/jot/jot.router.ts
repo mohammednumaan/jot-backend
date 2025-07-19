@@ -28,13 +28,17 @@ export default class JotRouter {
     );
 
     this.router.post(
-      "/create",
+      "/",
       asyncErrorHandler(this.controller.create.bind(this.controller))
     );
 
     this.router.put(
-      "/edit/:jotGroupId",
+      "/:jotGroupId",
       asyncErrorHandler(this.controller.edit.bind(this.controller))
+    );
+    this.router.delete(
+      "/:jotGroupId",
+      asyncErrorHandler(this.controller.delete.bind(this.controller))
     );
   }
   private async attachRouter(path: string, app: Router) {

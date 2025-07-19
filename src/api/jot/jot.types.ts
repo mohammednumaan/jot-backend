@@ -16,7 +16,7 @@ interface IJotGroup {
   updatedAt: Date;
 }
 
-interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId">{
+interface IJotWithOwnerAndGroup extends Omit<IJot, "jotGroupId"> {
   owner: {
     id: string;
     name: string;
@@ -37,6 +37,9 @@ interface IJotGroupsWithCount {
 
 type IJotDTO = Omit<IJot, "id" | "jotGroupId">;
 type IJotWithoutId = Omit<IJot, "id">;
+
+export type IJotNew = Omit<IJot, "id" | "createdAt" | "updatedAt">;
+export type IJotGroupNew = Omit<IJotGroup, "id" | "createdAt" | "updatedAt">;
 export {
   IJot,
   IJotGroup,

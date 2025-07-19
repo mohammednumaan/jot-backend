@@ -1,8 +1,26 @@
+import { IUser, IUserNew } from "../api/user/user.types";
 import prisma from "./prisma";
-import { IUser } from "../api/user/user.types";
+import { IUserDatabase } from "./types";
 
-export class UserDB {
-  async findOneUserByUsername(username: string): Promise<IUser | null> {
+export class UserDatabase implements IUserDatabase {
+  async findOne(id: string): Promise<IUser | null> {
+    return await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+  }
+
+  async findAll(offset: number, limit: number): Promise<IUser[]> {
+    const users = await prisma.user.findMany({
+      skip: offset,
+      take: limit,
+    });
+
+    return users;
+  }
+
+  async findOneByUsername(username: string): Promise<IUser | null> {
     const user = await prisma.user.findUnique({
       where: {
         username: username,
@@ -12,25 +30,37 @@ export class UserDB {
     return user;
   }
 
-  async findOneUserById(id: string): Promise<IUser | null> {
-    const user = await prisma.user.findUnique({
+  async create(inputs: IUserNew) {
+    const newUser = await prisma.user.create({
+      data: {
+        username: inputs.username || "new_user",
+        password: inputs.password,
+        avatar: inputs.avatar || "",
+        joinedAt: new Date(),
+      },
+    });
+
+    return newUser;
+  }
+
+  async update(id: string, inputs: IUser): Promise<IUser> {
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: id
+      },
+      data: {
+        ...inputs
+      }
+    })
+
+    return updatedUser;
+  }
+
+  async delete(id: string) {
+    await prisma.user.delete({
       where: {
         id: id,
       },
     });
-
-    return user;
-  }
-
-  async createUser(username: string, password: string): Promise<IUser> {
-    const newUser = await prisma.user.create({
-      data: {
-        username: username || "new_user",
-        password,
-        avatar: "",
-        joinedAt: new Date(),
-      },
-    });
-    return newUser;
   }
 }

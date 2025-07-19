@@ -33,7 +33,7 @@ model Jot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  jotGroup JotGroup @relation(fields: [jotGroupId], references: [id])
+  jotGroup JotGroup  @relation(fields: [jotGroupId], references: [id], onDelete: Cascade) 
   jotGroupId String
 }
 
