@@ -1,6 +1,6 @@
 import { Databases } from "../../db/index.db";
 import prisma from "../../db/prisma";
-import { NotFoundError } from "../../errors/api/error";
+import { BadRequestError, NotFoundError } from "../../errors/api/error";
 import { prismaErrorHandler } from "../../errors/prisma/errors.prisma";
 import parseFilename from "../../utils/parse_filename";
 import {
@@ -68,6 +68,12 @@ export class JotService {
       this.databases.jots.findByGroupId(jotGroupId)
     );
 
+    if (jots.length == 1 && jotData.deleted.length == 1) {
+      throw new BadRequestError(
+        "Cannot delete file. This jot contains only one file. Please delete the jot instead."
+      );
+    }
+
     const recievedJotIds = jots.map((jot) => jot.id);
     const existingJots = jotData.jots.filter((jot) =>
       recievedJotIds.includes(jot.id)
@@ -102,6 +108,13 @@ export class JotService {
           })
         );
       }
+      await prismaErrorHandler(() =>
+        tx.jot.deleteMany({
+          where: {
+            id: { in: jotData.deleted },
+          },
+        })
+      );
 
       // here, i loop through the entire array of jots we recieved
       // and update each jot that **exists** in the database, this is a
@@ -151,6 +164,36 @@ export class JotService {
     }
 
     await prismaErrorHandler(() => this.databases.jotGroups.delete(jotGroupId));
+  }
+
+  async deleteJotFile(jotGroupId: string, jotId: string) {
+    const jotGroup = await prismaErrorHandler(() =>
+      this.databases.jotGroups.findOne(jotGroupId)
+    );
+
+    if (!jotGroup) {
+      throw new NotFoundError("Jot not found");
+    }
+
+    const jotCounts = await prismaErrorHandler(() =>
+      this.databases.jots.findByGroupId(jotGroupId)
+    );
+
+    if (jotCounts.length == 1) {
+      throw new BadRequestError(
+        "Cannot delete file. This jot contains only one file. Please delete the jot instead."
+      );
+    }
+
+    const fileExists = await prismaErrorHandler(() =>
+      this.databases.jots.findOne(jotId)
+    );
+
+    if (!fileExists) {
+      throw new NotFoundError("File not found");
+    }
+
+    await prismaErrorHandler(() => this.databases.jots.delete(jotId));
   }
 
   async getAll(offset: number, limit: number, userId: string) {

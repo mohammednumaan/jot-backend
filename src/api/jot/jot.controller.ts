@@ -12,6 +12,8 @@ import {
   UpdateJotRequestSchema,
   DeleteJotRequestType,
   DeleteJotRequestSchema,
+  DeleteJotFileRequestType,
+  DeleteJotFileRequestSchema,
 } from "../../zod/jot/jot.z";
 import { ValidationError } from "../../errors/api/error";
 import {
@@ -91,6 +93,7 @@ export default class JotController {
       },
     };
 
+    console.log(responseData.jots)
     const responseValidation = validate<GetAllJotResponseType>(
       GetAllJotsResponseSchema,
       responseData
@@ -137,8 +140,6 @@ export default class JotController {
   }
 
   async delete(req: Request, res: Response, next: NextFunction) {
-    console.log(req.params);
-    
     const validationResult = validate<DeleteJotRequestType>(
       DeleteJotRequestSchema,
       req.params as unknown as { jotGroupId: string }
@@ -155,6 +156,32 @@ export default class JotController {
     await this.jotService.delete(validationResult.data.jotGroupId);
     const successResponse = createApiSuccessResponse(
       "Jot deleted successfully",
+      200,
+      null
+    );
+
+    return sendApiResponse(res, successResponse);
+  }
+
+  async deleteFile(req: Request, res: Response, next: NextFunction) {
+    const validationResult = validate<DeleteJotFileRequestType>(
+      DeleteJotFileRequestSchema,
+      req.params as unknown as { jotGroupId: string; fileId: string }
+    );
+
+    if (!validationResult.success) {
+      throw new ValidationError(
+        "Invalid request paramters",
+        "VALIDATION_ERROR",
+        validationResult.error.flatten()
+      );
+    }
+
+    const { jotGroupId, fileId } = validationResult.data;
+    await this.jotService.deleteJotFile(jotGroupId, fileId);
+
+    const successResponse = createApiSuccessResponse(
+      "Jot File deleted successfully",
       200,
       null
     );

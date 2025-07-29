@@ -9,6 +9,7 @@ export async function prismaErrorHandler<QueryReturnType>(
     const queryResult: QueryReturnType = await queryFn();
     return queryResult;
   } catch (error) {
+    console.log(error)
     if (error instanceof Prisma.PrismaClientValidationError) {
       throw new ValidationError(
         "Database validation failed. Invalid query structure."

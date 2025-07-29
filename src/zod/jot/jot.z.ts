@@ -79,10 +79,16 @@ const UpdateJotRequestSchema = z.object({
       )
   ),
   description: z.string().nullable(),
+  deleted: z.array(z.string()),
 });
 
 const DeleteJotRequestSchema = z.object({
   jotGroupId: z.string(),
+});
+
+const DeleteJotFileRequestSchema = z.object({
+  jotGroupId: z.string(),
+  fileId: z.string(),
 });
 
 type CreateJotRequestType = z.infer<typeof CreateJotRequestSchema>;
@@ -90,6 +96,7 @@ type GetAllJotsRequestType = z.infer<typeof GetAllJotsRequestSchema>;
 type GetAllJotResponseType = z.infer<typeof GetAllJotsResponseSchema>;
 type UpdateJotRequestType = z.infer<typeof UpdateJotRequestSchema>;
 type DeleteJotRequestType = z.infer<typeof DeleteJotRequestSchema>;
+type DeleteJotFileRequestType = z.infer<typeof DeleteJotFileRequestSchema>;
 
 export {
   CreateJotRequestSchema,
@@ -102,4 +109,6 @@ export {
   UpdateJotRequestType,
   DeleteJotRequestSchema,
   DeleteJotRequestType,
+  DeleteJotFileRequestSchema,
+  DeleteJotFileRequestType,
 };
