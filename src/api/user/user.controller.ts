@@ -38,11 +38,9 @@ export class UserController {
         validationResult.error.flatten()
       );
     }
-    console.log(req.user);
-
     const jots = await this.userService.getJotGroupById(
       validationResult.data.jotGroupId,
-      req.user.id
+      validationResult.data.name
     );
 
     const responseValidation = validate<GetJotGroupResponseType>(

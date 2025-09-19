@@ -226,7 +226,7 @@ export class JotService {
         throw new Error("A Jot's owner was not found.");
       }
       const jotWithAuthorAndGroup: IJotWithOwnerAndGroup =
-        this.mapper.mapToSingleJotWithOwner(jots[0], user, group, jots.length);
+        this.mapper.mapToSingleJotWithOwner(jots[0], jotOwner, group, jots.length);
 
       allJots.push(jotWithAuthorAndGroup);
     }

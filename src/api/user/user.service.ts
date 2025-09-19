@@ -14,11 +14,11 @@ export class userService {
     this.mapper = new JotMapper();
   }
 
-  async getJotGroupById(jotGroupId: string, userId: string) {
-    console.log("user id", userId);
+  async getJotGroupById(jotGroupId: string, username: string) {
+    console.log("user id", username);
 
     const user = await prismaErrorHandler<IUser | null>(() =>
-      this.databases.user.findOne(userId)
+      this.databases.user.findOneByUsername(username)
     );
 
     if (!user) {
